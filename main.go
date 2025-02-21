@@ -8,6 +8,7 @@ import (
 	"os"
 
 	"github.com/jroimartin/gocui"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -48,6 +49,15 @@ func connectToDB() (*mongo.Client, error) {
 	return client, nil
 }
 
+// getCollections retrieves all collections from the specified database
+func getCollections(client *mongo.Client, dbName string) ([]string, error) {
+	collections, err := client.Database(dbName).ListCollectionNames(context.TODO(), bson.D{})
+	if err != nil {
+		return nil, err
+	}
+	return collections, nil
+}
+
 func main() {
 	// Connect to the database
 	client, err := connectToDB()
@@ -56,7 +66,11 @@ func main() {
 	}
 	defer client.Disconnect(context.TODO())
 
-	log.Println("Connected to FerretDB!")
+	// Get collection names from the "test" database
+	collections, err := getCollections(client, "testDB")
+	if err != nil {
+		log.Fatalf("Failed to retrieve collections: %v", err)
+	}
 
 	// Initialize gocui
 	g, err := gocui.NewGui(gocui.OutputNormal)
@@ -65,8 +79,12 @@ func main() {
 	}
 	defer g.Close()
 
-	// Set layout and keybindings
-	g.SetManagerFunc(layout)
+	// Pass collections to layout
+	g.SetManagerFunc(func(g *gocui.Gui) error {
+		return layout(g, collections)
+	})
+
+	// Set keybinding for quitting
 	if err := g.SetKeybinding("", gocui.KeyCtrlC, gocui.ModNone, quit); err != nil {
 		log.Fatal(err)
 	}
@@ -78,7 +96,7 @@ func main() {
 }
 
 // layout defines the UI layout
-func layout(g *gocui.Gui) error {
+func layout(g *gocui.Gui, collections []string) error {
 	maxX, maxY := g.Size()
 
 	// Create the main view
@@ -86,9 +104,13 @@ func layout(g *gocui.Gui) error {
 		if err != gocui.ErrUnknownView {
 			return err
 		}
-		v.Title = "FerretMate"
+		v.Title = "FerretMate - Collections"
 		v.Wrap = true
-		fmt.Fprintln(v, "Welcome to FerretMate!\nConnected to FerretDB successfully!")
+		fmt.Fprintln(v, "Connected to FerretDB!\n")
+		fmt.Fprintln(v, "Collections in 'test' database:")
+		for _, name := range collections {
+			fmt.Fprintf(v, "- %s\n", name)
+		}
 	}
 
 	return nil
