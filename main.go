@@ -12,13 +12,13 @@ import (
 
 func main() {
 	// Load temp linkt o test DB from file .env
-	err := config.LoadEnv(".env")
+	uri, err := config.ReadDBURI(".env")
 	if err != nil {
 		log.Fatalf("Failed to load environment variables: %v", err)
 	}
 
 	// Connection with DB
-	client, err := db.ConnectToDB()
+	client, err := db.ConnectToDB(uri)
 	if err != nil {
 		log.Fatalf("Failed to connect to the database: %v", err)
 	}

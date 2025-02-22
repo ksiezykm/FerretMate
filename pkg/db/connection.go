@@ -2,39 +2,24 @@ package db
 
 import (
 	"context"
-	"os"
-	"time"
 
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-// ConnectToDB establishes a connection to the FerretDB instance.
-func ConnectToDB() (*mongo.Client, error) {
-	uri := os.Getenv("DB_URI")
-	if uri == "" {
-		return nil, ErrMissingEnv
-	}
+// connectToDB connects to FerretDB using the URI from .env file
+func ConnectToDB(uri string) (*mongo.Client, error) {
 
-	client, err := mongo.NewClient(options.Client().ApplyURI(uri))
+	clientOptions := options.Client().ApplyURI(uri)
+	client, err := mongo.Connect(context.TODO(), clientOptions)
 	if err != nil {
 		return nil, err
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
-
-	err = client.Connect(ctx)
-	if err != nil {
+	// Verify connection
+	if err := client.Ping(context.TODO(), nil); err != nil {
 		return nil, err
 	}
 
 	return client, nil
 }
-
-// ErrMissingEnv is returned when the DB_URI environment variable is missing.
-var ErrMissingEnv = &EnvError{"DB_URI not set"}
-
-type EnvError struct{ msg string }
-
-func (e *EnvError) Error() string { return e.msg }
