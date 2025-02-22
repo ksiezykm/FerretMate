@@ -3,43 +3,42 @@ package main
 import (
 	"log"
 
-	"github.com/ksiezykm/FerretMate/pkg/config"
-	"github.com/ksiezykm/FerretMate/pkg/db"
-	"github.com/ksiezykm/FerretMate/pkg/ui"
+	"context"
 
 	"github.com/jroimartin/gocui"
+	"github.com/ksiezykm/FerretMate/pkg/db"
+	"github.com/ksiezykm/FerretMate/pkg/ui"
 )
 
 func main() {
-	// Load temp linkt o test DB from file .env
-	uri, err := config.ReadDBURI(".env")
+	// Connect to DB and get collections
+	client, err := db.ConnectToDB()
 	if err != nil {
-		log.Fatalf("Failed to load environment variables: %v", err)
+		log.Fatalf("Failed to connect to FerretDB: %v", err)
+	}
+	defer client.Disconnect(context.TODO())
+
+	ui.Collections, err = db.GetCollections(client, "testDB")
+	if err != nil {
+		log.Fatalf("Failed to retrieve collections: %v", err)
 	}
 
-	// Connection with DB
-	client, err := db.ConnectToDB(uri)
-	if err != nil {
-		log.Fatalf("Failed to connect to the database: %v", err)
-	}
-	defer client.Disconnect(nil)
-
-	// CUI initialization
+	// Create the GUI
 	g, err := gocui.NewGui(gocui.OutputNormal)
 	if err != nil {
-		log.Fatalf("Failed to create GUI: %v", err)
+		log.Fatal(err)
 	}
 	defer g.Close()
 
 	g.SetManagerFunc(ui.Layout)
 
-	// Register key bindings
-	if err := ui.RegisterKeyBindings(g, client); err != nil {
-		log.Fatalf("Failed to set key bindings: %v", err)
+	// Register all keybindings
+	if err := ui.RegisterKeyBindings(g); err != nil {
+		log.Fatalf("Failed to register keybindings: %v", err)
 	}
 
-	// Interface initialization
+	// Start the main loop
 	if err := g.MainLoop(); err != nil && err != gocui.ErrQuit {
-		log.Fatalf("Error in main loop: %v", err)
+		log.Fatal(err)
 	}
 }

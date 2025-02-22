@@ -1,77 +1,52 @@
+// Package ui handles the user interface and keybindings
 package ui
 
 import (
-	"encoding/json"
-	"fmt"
-
-	"github.com/ksiezykm/FerretMate/pkg/db"
-
 	"github.com/jroimartin/gocui"
-	"go.mongodb.org/mongo-driver/mongo"
 )
 
-// RegisterKeyBindings defines key bindings for navigation.
-func RegisterKeyBindings(g *gocui.Gui, client *mongo.Client) error {
-	if err := g.SetKeybinding("", gocui.KeyCtrlC, gocui.ModNone, quit); err != nil {
-		return err
+// CursorUp moves the cursor up in the given view
+func CursorUp(g *gocui.Gui, v *gocui.View) error {
+	if v == nil {
+		return nil
 	}
-
-	// Enter to select collection
-	if err := g.SetKeybinding("collections", gocui.KeyEnter, gocui.ModNone, func(g *gocui.Gui, v *gocui.View) error {
-		return showDocuments(g, v, client)
-	}); err != nil {
-		return err
+	cx, cy := v.Cursor()
+	if cy > 0 {
+		return v.SetCursor(cx, cy-1)
 	}
-
-	// Enter to select document
-	if err := g.SetKeybinding("documents", gocui.KeyEnter, gocui.ModNone, showDocumentDetails); err != nil {
-		return err
-	}
-
 	return nil
 }
 
-// showDocuments retrieves documents from the selected collection.
-func showDocuments(g *gocui.Gui, v *gocui.View, client *mongo.Client) error {
-	_, cy := v.Cursor()
-	line, err := v.Line(cy)
-	if err != nil {
-		return err
+// CursorDown moves the cursor down in the given view
+func CursorDown(g *gocui.Gui, v *gocui.View) error {
+	if v == nil {
+		return nil
 	}
-
-	collectionName := line
-	docs, err := db.GetDocuments(client, "testDB", collectionName)
-	if err != nil {
-		return err
-	}
-
-	// Update document view
-	docView, _ := g.View("documents")
-	docView.Clear()
-	for _, doc := range docs {
-		docJSON, _ := json.MarshalIndent(doc, "", "  ")
-		fmt.Fprintln(docView, string(docJSON))
-	}
-
-	return nil
+	cx, cy := v.Cursor()
+	return v.SetCursor(cx, cy+1)
 }
 
-// showDocumentDetails shows the selected document's details.
-func showDocumentDetails(g *gocui.Gui, v *gocui.View) error {
-	_, cy := v.Cursor()
-	line, err := v.Line(cy)
-	if err != nil {
-		return err
-	}
-
-	detailsView, _ := g.View("details")
-	detailsView.Clear()
-	fmt.Fprintln(detailsView, line)
-
-	return nil
-}
-
-// quit exits the application.
-func quit(g *gocui.Gui, v *gocui.View) error {
+// Quit exits the application
+func Quit(g *gocui.Gui, v *gocui.View) error {
 	return gocui.ErrQuit
+}
+
+// RegisterKeyBindings sets up all keybindings
+func RegisterKeyBindings(g *gocui.Gui) error {
+	if err := g.SetKeybinding("collections", gocui.KeyArrowUp, gocui.ModNone, CursorUp); err != nil {
+		return err
+	}
+	if err := g.SetKeybinding("collections", gocui.KeyArrowDown, gocui.ModNone, CursorDown); err != nil {
+		return err
+	}
+	if err := g.SetKeybinding("documents", gocui.KeyArrowUp, gocui.ModNone, CursorUp); err != nil {
+		return err
+	}
+	if err := g.SetKeybinding("documents", gocui.KeyArrowDown, gocui.ModNone, CursorDown); err != nil {
+		return err
+	}
+	if err := g.SetKeybinding("", gocui.KeyCtrlC, gocui.ModNone, Quit); err != nil {
+		return err
+	}
+	return nil
 }
