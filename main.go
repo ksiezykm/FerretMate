@@ -3,9 +3,9 @@ package main
 import (
 	"log"
 
-	"github.com/ksiezykm/ferretmate/pkg/config"
-	"github.com/ksiezykm/ferretmate/pkg/db"
-	"github.com/ksiezykm/ferretmate/pkg/ui"
+	"github.com/ksiezykm/FerretMate/pkg/config"
+	"github.com/ksiezykm/FerretMate/pkg/db"
+	"github.com/ksiezykm/FerretMate/pkg/ui"
 
 	"github.com/jroimartin/gocui"
 )

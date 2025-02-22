@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/ksiezykm/ferretmate/pkg/db"
+	"github.com/ksiezykm/FerretMate/pkg/db"
 
 	"github.com/jroimartin/gocui"
 	"go.mongodb.org/mongo-driver/mongo"
