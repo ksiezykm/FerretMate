@@ -11,20 +11,20 @@ import (
 )
 
 func main() {
-	// Wczytanie zmiennych środowiskowych z pliku .env
+	// Load temp linkt o test DB from file .env
 	err := config.LoadEnv(".env")
 	if err != nil {
 		log.Fatalf("Failed to load environment variables: %v", err)
 	}
 
-	// Połączenie z bazą danych
+	// Connection with DB
 	client, err := db.ConnectToDB()
 	if err != nil {
 		log.Fatalf("Failed to connect to the database: %v", err)
 	}
 	defer client.Disconnect(nil)
 
-	// Inicjalizacja interfejsu użytkownika
+	// CUI initialization
 	g, err := gocui.NewGui(gocui.OutputNormal)
 	if err != nil {
 		log.Fatalf("Failed to create GUI: %v", err)
@@ -33,12 +33,12 @@ func main() {
 
 	g.SetManagerFunc(ui.Layout)
 
-	// Rejestracja klawiszy
+	// Register key bindings
 	if err := ui.RegisterKeyBindings(g, client); err != nil {
 		log.Fatalf("Failed to set key bindings: %v", err)
 	}
 
-	// Start interfejsu
+	// Interface initialization
 	if err := g.MainLoop(); err != nil && err != gocui.ErrQuit {
 		log.Fatalf("Error in main loop: %v", err)
 	}
