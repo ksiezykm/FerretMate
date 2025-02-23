@@ -2,6 +2,8 @@
 package ui
 
 import (
+	"fmt"
+
 	"github.com/jroimartin/gocui"
 )
 
@@ -26,6 +28,7 @@ func CursorDown(g *gocui.Gui, v *gocui.View) error {
 	if cy < 1 {
 		return v.SetCursor(cx, cy+1)
 	}
+	fmt.Fprintln(v, "name")
 	return nil
 }
 
