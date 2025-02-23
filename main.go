@@ -8,6 +8,7 @@ import (
 	"github.com/jroimartin/gocui"
 	"github.com/ksiezykm/FerretMate/pkg/db"
 	"github.com/ksiezykm/FerretMate/pkg/ui"
+	"github.com/ksiezykm/FerretMate/pkg/model"
 )
 
 func main() {
@@ -18,7 +19,7 @@ func main() {
 	}
 	defer client.Disconnect(context.TODO())
 
-	ui.Collections, err = db.GetCollections(client, "testDB")
+	model.State.Collections, err = db.GetCollections(client, "testDB")
 	if err != nil {
 		log.Fatalf("Failed to retrieve collections: %v", err)
 	}

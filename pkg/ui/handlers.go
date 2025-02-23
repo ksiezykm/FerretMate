@@ -2,9 +2,10 @@
 package ui
 
 import (
-	"fmt"
+	"strings"
 
 	"github.com/jroimartin/gocui"
+	"github.com/ksiezykm/FerretMate/pkg/model"
 )
 
 // CursorUp moves the cursor up in the given view
@@ -28,13 +29,28 @@ func CursorDown(g *gocui.Gui, v *gocui.View) error {
 	if cy < 1 {
 		return v.SetCursor(cx, cy+1)
 	}
-	fmt.Fprintln(v, "name")
+	model.State.Collections = append(model.State.Collections, "new collection")
+	g.Update(func(g *gocui.Gui) error { return nil })
 	return nil
 }
 
 // Quit exits the application
 func Quit(g *gocui.Gui, v *gocui.View) error {
 	return gocui.ErrQuit
+}
+
+func selectItem(g *gocui.Gui, v *gocui.View) error {
+	_, cy := v.Cursor()
+	lines := strings.Split(v.Buffer(), "\n")
+
+	if cy >= 0 && cy < len(lines)-1 {
+		selected := lines[cy]
+
+		model.State.Documents = append(model.State.Documents, selected+" new document")
+		updateDocuments(g)
+	}
+
+	return nil
 }
 
 // RegisterKeyBindings sets up all keybindings
@@ -52,6 +68,9 @@ func RegisterKeyBindings(g *gocui.Gui) error {
 		return err
 	}
 	if err := g.SetKeybinding("", gocui.KeyCtrlC, gocui.ModNone, Quit); err != nil {
+		return err
+	}
+	if err := g.SetKeybinding("", gocui.KeyEnter, gocui.ModNone, selectItem); err != nil {
 		return err
 	}
 	return nil

@@ -5,10 +5,10 @@ type AppState struct {
 	Documents   []string
 }
 
-var State *AppState
+var State AppState
 
 func InitAppState() {
-	State = &AppState{
+	State = AppState{
 		Collections: []string{},
 		Documents:   []string{},
 	}

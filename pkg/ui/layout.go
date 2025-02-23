@@ -4,9 +4,35 @@ import (
 	"fmt"
 
 	"github.com/jroimartin/gocui"
+	"github.com/ksiezykm/FerretMate/pkg/model"
 )
 
-var Collections []string
+// updateCollections
+func updateCollections(g *gocui.Gui) error {
+	v, err := g.View("collections")
+	if err != nil {
+		return err
+	}
+	v.Clear()
+	for _, collection := range model.State.Collections {
+		fmt.Fprintln(v, collection)
+	}
+	return nil
+}
+
+// updateDocuments
+func updateDocuments(g *gocui.Gui) error {
+	v, err := g.View("documents")
+	if err != nil {
+		return err
+	}
+	v.Clear()
+	for _, doc := range model.State.Documents {
+		fmt.Fprintln(v, doc)
+	}
+	return nil
+}
+
 
 // layout defines the UI layout with three panels
 func Layout(g *gocui.Gui) error {
@@ -20,7 +46,7 @@ func Layout(g *gocui.Gui) error {
 		v.Title = "Collections"
 		v.Highlight = true
 		v.SelFgColor = gocui.ColorGreen
-		for _, name := range Collections {
+		for _, name := range model.State.Collections {
 			fmt.Fprintln(v, name)
 		}
 		if _, err := g.SetCurrentView("collections"); err != nil {
