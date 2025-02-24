@@ -13,7 +13,7 @@ import (
 
 // GetCollections retrieves the list of collections from the given database.
 func GetCollections(dbName string) ([]string, error) {
-	collections, err := model.DBclient.Database(dbName).ListCollectionNames(context.TODO(), bson.D{})
+	collections, err := model.State.DBclient.Database(dbName).ListCollectionNames(context.TODO(), bson.D{})
 	if err != nil {
 		return nil, fmt.Errorf("failed to list collections: %w", err)
 	}
@@ -22,7 +22,7 @@ func GetCollections(dbName string) ([]string, error) {
 
 // GetDocuments retrieves documents from the specified collection.
 func GetDocuments(dbName, collectionName string) ([]string, error) {
-	collection := model.DBclient.Database(dbName).Collection(collectionName)
+	collection := model.State.DBclient.Database(dbName).Collection(collectionName)
 
 	// Opcje dla zapytania (możesz dostosować)
 	findOptions := options.Find()
@@ -55,7 +55,7 @@ func GetDocuments(dbName, collectionName string) ([]string, error) {
 			log.Println("błąd: _id nie znalezione")
 		}
 	}
-
+	
 	// Sprawdzenie błędów kursora
 	if err := cursor.Err(); err != nil {
 		return nil, fmt.Errorf("błąd kursora: %w", err)
@@ -65,7 +65,7 @@ func GetDocuments(dbName, collectionName string) ([]string, error) {
 }
 
 func GetDocumentByID(dbName, collectionName, documentID string) (bson.M, error) {
-	collection := model.DBclient.Database(dbName).Collection(collectionName)
+	collection := model.State.DBclient.Database(dbName).Collection(collectionName)
 
 	// Próba konwersji identyfikatora na bson.ObjectID
 	objID, err := primitive.ObjectIDFromHex(documentID)

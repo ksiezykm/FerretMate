@@ -5,12 +5,14 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-var DBclient *mongo.Client
-
 type AppState struct {
-	Collections     []string
-	Documents       []string
-	DocumentDetails bson.M
+	DBname             string
+	DBclient           *mongo.Client
+	Collections        []string
+	Documents          []string
+	DocumentDetails    bson.M
+	SelectedCollection string
+	SelectedDocument   string
 }
 
 var State AppState

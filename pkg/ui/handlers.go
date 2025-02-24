@@ -2,6 +2,7 @@
 package ui
 
 import (
+	"encoding/json"
 	"log"
 	"strings"
 
@@ -36,6 +37,16 @@ func CursorDown(g *gocui.Gui, v *gocui.View) error {
 		max = len(model.State.Collections) - 1
 	case "documents":
 		max = len(model.State.Documents) - 1
+	case "details":
+		jsonDoc, err := json.MarshalIndent(model.State.DocumentDetails, "", "  ") // JSON formatting with indentation
+		if err != nil {
+			log.Println("Błąd konwersji dokumentu na JSON:", err)
+			return nil
+		}
+		jsonString := string(jsonDoc)            // Convert to string
+		lines := strings.Split(jsonString, "\n") // Division into lines
+		lineCount := len(lines)                  // Line count
+		max = lineCount - 1
 	}
 
 	cx, cy := v.Cursor()
@@ -66,19 +77,20 @@ func selectItem(g *gocui.Gui, v *gocui.View) error {
 
 	switch currentView {
 	case "collections":
-		model.State.Documents, err = db.GetDocuments("testDB", selected)
+		model.State.SelectedCollection = selected
+		model.State.Documents, err = db.GetDocuments(model.State.DBname, selected)
 		if err != nil {
 			log.Fatalf("Failed to retrieve collections: %v", err)
 		}
 		updateDocuments(g)
 	case "documents":
-		model.State.DocumentDetails, err = db.GetDocumentByID("testDB", "testCollection", selected)
+		model.State.SelectedDocument = selected
+		model.State.DocumentDetails, err = db.GetDocumentByID(model.State.DBname, model.State.SelectedCollection, selected)
 		if err != nil {
 			log.Fatalf("Failed to retrieve Document: %v", err)
 		}
 		updateDocumentDetails(g)
 	}
-	
 
 	return nil
 }
@@ -91,6 +103,8 @@ func nextView(g *gocui.Gui, v *gocui.View) error {
 	case "collections":
 		nextView = "documents"
 	case "documents":
+		nextView = "details"
+	case "details":
 		nextView = "collections"
 	}
 
@@ -127,6 +141,9 @@ func RegisterKeyBindings(g *gocui.Gui) error {
 	if err := g.SetKeybinding("documents", gocui.KeyArrowDown, gocui.ModNone, CursorDown); err != nil {
 		return err
 	}
+	if err := g.SetKeybinding("details", gocui.KeyArrowDown, gocui.ModNone, CursorDown); err != nil {
+		return err
+	}
 	if err := g.SetKeybinding("", gocui.KeyCtrlC, gocui.ModNone, Quit); err != nil {
 		return err
 	}
@@ -137,6 +154,9 @@ func RegisterKeyBindings(g *gocui.Gui) error {
 		return err
 	}
 	if err := g.SetKeybinding("documents", gocui.KeyTab, gocui.ModNone, nextView); err != nil {
+		return err
+	}
+	if err := g.SetKeybinding("details", gocui.KeyTab, gocui.ModNone, nextView); err != nil {
 		return err
 	}
 	return nil

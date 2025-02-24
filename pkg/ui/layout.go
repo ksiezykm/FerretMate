@@ -62,6 +62,8 @@ func Layout(g *gocui.Gui) error {
 		}
 		v.Title = "Collections"
 		v.Highlight = true
+		v.Autoscroll = false
+		v.Editable = false
 		v.SelFgColor = gocui.ColorGreen
 		for _, name := range model.State.Collections {
 			fmt.Fprintln(v, name)
@@ -79,6 +81,8 @@ func Layout(g *gocui.Gui) error {
 		v.Title = "Documents"
 		v.Highlight = false
 		v.SelFgColor = gocui.ColorGreen
+		v.Autoscroll = false
+		v.Editable = false
 		// for _, doc := range documents {
 		// 	// Serialize BSON to JSON for display
 		// 	docJSON, _ := json.MarshalIndent(doc, "", "  ")
@@ -92,6 +96,10 @@ func Layout(g *gocui.Gui) error {
 			return err
 		}
 		v.Title = "Document Details"
+		v.Highlight = false
+		v.SelFgColor = gocui.ColorGreen
+		v.Autoscroll = false
+		v.Editable = false
 		// if selectedDocument != nil {
 		// 	// Serialize the selected document to JSON for display
 		// 	docJSON, _ := json.MarshalIndent(selectedDocument, "", "  ")
