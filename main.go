@@ -13,13 +13,14 @@ import (
 
 func main() {
 	// Connect to DB and get collections
-	client, err := db.ConnectToDB()
+	var err error
+	model.DBclient, err = db.ConnectToDB()
 	if err != nil {
 		log.Fatalf("Failed to connect to FerretDB: %v", err)
 	}
-	defer client.Disconnect(context.TODO())
+	defer model.DBclient.Disconnect(context.TODO())
 
-	model.State.Collections, err = db.GetCollections(client, "testDB")
+	model.State.Collections, err = db.GetCollections("testDB")
 	if err != nil {
 		log.Fatalf("Failed to retrieve collections: %v", err)
 	}

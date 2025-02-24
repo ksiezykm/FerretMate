@@ -2,10 +2,11 @@
 package ui
 
 import (
-	"strconv"
+	"log"
 	"strings"
 
 	"github.com/jroimartin/gocui"
+	"github.com/ksiezykm/FerretMate/pkg/db"
 	"github.com/ksiezykm/FerretMate/pkg/model"
 )
 
@@ -52,15 +53,32 @@ func Quit(g *gocui.Gui, v *gocui.View) error {
 }
 
 func selectItem(g *gocui.Gui, v *gocui.View) error {
+	var err error
 	_, cy := v.Cursor()
 	lines := strings.Split(v.Buffer(), "\n")
 
-	if cy >= 0 && cy < len(lines)-1 {
-		selected := lines[cy]
+	selected := ""
 
-		model.State.Documents = append(model.State.Documents, selected+" new document "+strconv.Itoa(len(model.State.Collections)))
-		updateDocuments(g)
+	if cy >= 0 && cy < len(lines)-1 {
+		selected = lines[cy]
 	}
+	currentView := v.Name()
+
+	switch currentView {
+	case "collections":
+		model.State.Documents, err = db.GetDocuments("testDB", selected)
+		if err != nil {
+			log.Fatalf("Failed to retrieve collections: %v", err)
+		}
+		updateDocuments(g)
+	case "documents":
+		model.State.DocumentDetails, err = db.GetDocumentByID("testDB", "testCollection", selected)
+		if err != nil {
+			log.Fatalf("Failed to retrieve Document: %v", err)
+		}
+		updateDocumentDetails(g)
+	}
+	
 
 	return nil
 }
@@ -100,13 +118,10 @@ func nextView(g *gocui.Gui, v *gocui.View) error {
 
 // RegisterKeyBindings sets up all keybindings
 func RegisterKeyBindings(g *gocui.Gui) error {
-	if err := g.SetKeybinding("collections", gocui.KeyArrowUp, gocui.ModNone, CursorUp); err != nil {
+	if err := g.SetKeybinding("", gocui.KeyArrowUp, gocui.ModNone, CursorUp); err != nil {
 		return err
 	}
 	if err := g.SetKeybinding("collections", gocui.KeyArrowDown, gocui.ModNone, CursorDown); err != nil {
-		return err
-	}
-	if err := g.SetKeybinding("documents", gocui.KeyArrowUp, gocui.ModNone, CursorUp); err != nil {
 		return err
 	}
 	if err := g.SetKeybinding("documents", gocui.KeyArrowDown, gocui.ModNone, CursorDown); err != nil {

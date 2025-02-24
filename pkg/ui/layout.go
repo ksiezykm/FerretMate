@@ -1,7 +1,9 @@
 package ui
 
 import (
+	"encoding/json"
 	"fmt"
+	"log"
 
 	"github.com/jroimartin/gocui"
 	"github.com/ksiezykm/FerretMate/pkg/model"
@@ -30,6 +32,22 @@ func updateDocuments(g *gocui.Gui) error {
 	for _, doc := range model.State.Documents {
 		fmt.Fprintln(v, doc)
 	}
+	return nil
+}
+
+// updateDocument Details
+func updateDocumentDetails(g *gocui.Gui) error {
+	v, err := g.View("details")
+	if err != nil {
+		return err
+	}
+	v.Clear()
+	jsonDoc, err := json.MarshalIndent(model.State.DocumentDetails, "", "  ") // Formatowanie JSON z wcięciami
+	if err != nil {
+		log.Println("Błąd konwersji dokumentu na JSON:", err)
+		return nil
+	}
+	fmt.Fprintln(v, string(jsonDoc))
 	return nil
 }
 
