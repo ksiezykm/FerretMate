@@ -33,7 +33,6 @@ func updateDocuments(g *gocui.Gui) error {
 	return nil
 }
 
-
 // layout defines the UI layout with three panels
 func Layout(g *gocui.Gui) error {
 	maxX, maxY := g.Size()
@@ -60,7 +59,7 @@ func Layout(g *gocui.Gui) error {
 			return err
 		}
 		v.Title = "Documents"
-		v.Highlight = true
+		v.Highlight = false
 		v.SelFgColor = gocui.ColorGreen
 		// for _, doc := range documents {
 		// 	// Serialize BSON to JSON for display
