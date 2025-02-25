@@ -13,6 +13,7 @@ type AppState struct {
 	DocumentDetails    bson.M
 	SelectedCollection string
 	SelectedDocument   string
+	Messages		   string
 }
 
 var State AppState
