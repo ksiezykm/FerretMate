@@ -6,7 +6,7 @@ import (
 	"log"
 	"strings"
 
-	"github.com/jroimartin/gocui"
+	"github.com/awesome-gocui/gocui"
 	"github.com/ksiezykm/FerretMate/pkg/db"
 	"github.com/ksiezykm/FerretMate/pkg/model"
 )

@@ -5,10 +5,10 @@ import (
 
 	"context"
 
-	"github.com/jroimartin/gocui"
+	"github.com/awesome-gocui/gocui"
 	"github.com/ksiezykm/FerretMate/pkg/db"
-	"github.com/ksiezykm/FerretMate/pkg/ui"
 	"github.com/ksiezykm/FerretMate/pkg/model"
+	"github.com/ksiezykm/FerretMate/pkg/ui"
 )
 
 func main() {
@@ -28,7 +28,7 @@ func main() {
 	}
 
 	// Create the GUI
-	g, err := gocui.NewGui(gocui.OutputNormal)
+	g, err := gocui.NewGui(gocui.OutputNormal, true)
 	if err != nil {
 		log.Fatal(err)
 	}
