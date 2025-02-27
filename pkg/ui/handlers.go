@@ -142,6 +142,23 @@ func nextView(g *gocui.Gui, v *gocui.View) error {
 	return nil
 }
 
+func getLine(g *gocui.Gui, v *gocui.View) error {
+	var l string
+	var err error
+
+	_, cy := v.Cursor()
+	if l, err = v.Line(cy); err != nil {
+		l = ""
+	}
+	model.State.LineToEdit = l
+
+	if err := editView(g); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // RegisterKeyBindings sets up all keybindings
 func RegisterKeyBindings(g *gocui.Gui) error {
 	if err := g.SetKeybinding("", gocui.KeyArrowUp, gocui.ModNone, CursorUp); err != nil {
@@ -169,6 +186,15 @@ func RegisterKeyBindings(g *gocui.Gui) error {
 		return err
 	}
 	if err := g.SetKeybinding("details", gocui.KeyTab, gocui.ModNone, nextView); err != nil {
+		return err
+	}
+	if err := g.SetKeybinding("details", gocui.KeyEnter, gocui.ModNone, getLine); err != nil {
+		return err
+	}
+	if err := g.SetKeybinding("edit", gocui.KeyArrowRight, gocui.ModNone, EditCursorRight); err != nil {
+		return err
+	}
+	if err := g.SetKeybinding("edit", gocui.KeyArrowLeft, gocui.ModNone, EditCursorLeft); err != nil {
 		return err
 	}
 	return nil

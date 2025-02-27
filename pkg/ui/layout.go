@@ -65,6 +65,18 @@ func updateMessages(g *gocui.Gui) error {
 	return nil
 }
 
+func updateEdit(g *gocui.Gui, line string) error {
+	v, err := g.View("edit")
+	if err != nil {
+		return err
+	}
+	v.Clear()
+
+	fmt.Fprintln(v, line)
+
+	return nil
+}
+
 // layout defines the UI layout with three panels
 func Layout(g *gocui.Gui) error {
 	maxX, maxY := g.Size()
@@ -97,6 +109,7 @@ func Layout(g *gocui.Gui) error {
 		v.SelFgColor = gocui.ColorGreen
 		v.Autoscroll = false
 		v.Editable = false
+		v.Wrap = true
 		// for _, doc := range documents {
 		//      // Serialize BSON to JSON for display
 		//      docJSON, _ := json.MarshalIndent(doc, "", "  ")
@@ -113,7 +126,8 @@ func Layout(g *gocui.Gui) error {
 		v.Highlight = false
 		v.SelFgColor = gocui.ColorGreen
 		v.Autoscroll = false
-		v.Editable = false
+		v.Editable = true
+		v.Wrap = true
 		// if selectedDocument != nil {
 		//      // Serialize the selected document to JSON for display
 		//      docJSON, _ := json.MarshalIndent(selectedDocument, "", "  ")
@@ -131,6 +145,7 @@ func Layout(g *gocui.Gui) error {
 		v.Title = "Messages"
 		v.Autoscroll = false
 		v.Editable = false
+		v.Wrap = true
 	}
 
 	return nil

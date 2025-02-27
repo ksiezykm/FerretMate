@@ -13,7 +13,9 @@ type AppState struct {
 	DocumentDetails    bson.M
 	SelectedCollection string
 	SelectedDocument   string
-	Messages		   string
+	Messages           string
+	LineToEdit         string
+	EditCursorPos      int
 }
 
 var State AppState
