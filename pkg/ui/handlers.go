@@ -150,7 +150,8 @@ func getLine(g *gocui.Gui, v *gocui.View) error {
 	if l, err = v.Line(cy); err != nil {
 		l = ""
 	}
-	model.State.LineToEdit = l
+
+	lineToEdit = l
 
 	if err := editView(g); err != nil {
 		return err
@@ -195,6 +196,9 @@ func RegisterKeyBindings(g *gocui.Gui) error {
 		return err
 	}
 	if err := g.SetKeybinding("edit", gocui.KeyArrowLeft, gocui.ModNone, EditCursorLeft); err != nil {
+		return err
+	}
+	if err := g.SetKeybinding("edit", gocui.KeyEsc, gocui.ModNone, closeEditView); err != nil {
 		return err
 	}
 	return nil

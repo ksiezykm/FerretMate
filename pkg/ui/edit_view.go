@@ -3,10 +3,12 @@ package ui
 import (
 	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/awesome-gocui/gocui"
-	"github.com/ksiezykm/FerretMate/pkg/model"
 )
+
+var lineToEdit string
 
 func editView(g *gocui.Gui) error {
 	maxX, maxY := g.Size()
@@ -14,12 +16,15 @@ func editView(g *gocui.Gui) error {
 		if !errors.Is(err, gocui.ErrUnknownView) {
 			return err
 		}
-		v.Title = "Edit"
+		v.Title = "Editor (Ctrl+S: Save, Esc: Cancel)"
 		v.Editable = true
-		v.Highlight = true
-		v.Wrap = true
+		// v.Highlight = true
+		// v.Wrap = true
 		v.SelBgColor = gocui.ColorGreen
-		fmt.Fprintln(v, model.State.LineToEdit)
+		v.Editor = gocui.DefaultEditor
+		updateEdit(g, insertChar(lineToEdit, '█', 0))
+		v.SetCursor(0, 0)
+		fmt.Fprintln(v, lineToEdit)
 		if _, err := g.SetCurrentView("edit"); err != nil {
 			return err
 		}
@@ -42,13 +47,19 @@ func EditCursorRight(g *gocui.Gui, v *gocui.View) error {
 		return nil
 	}
 	cx, cy := v.Cursor()
+
+	var l string
+	var err error
+
+	if l, err = v.Line(cy); err != nil {
+		l = ""
+	}
+	l = strings.ReplaceAll(l, "█", "")
+	lineToEdit = l
+
 	if cx >= 0 {
 
-		updateEdit(g, insertChar(model.State.LineToEdit, '█', cx+1))
-
-		model.State.Messages = fmt.Sprintf("%d", cx)
-		updateMessages(g)
-
+		updateEdit(g, insertChar(lineToEdit, '█', cx+1))
 		return v.SetCursor(cx+1, cy)
 	}
 	return nil
@@ -57,15 +68,36 @@ func EditCursorLeft(g *gocui.Gui, v *gocui.View) error {
 	if v == nil {
 		return nil
 	}
+
+	var l string
+	var err error
+
 	cx, cy := v.Cursor()
+
+	if l, err = v.Line(cy); err != nil {
+		l = ""
+	}
+	l = strings.ReplaceAll(l, "█", "")
+	lineToEdit = l
+
 	if cx >= 0 {
+		updateEdit(g, insertChar(lineToEdit, '█', cx-1))
 
-		updateEdit(g, insertChar(model.State.LineToEdit, '█', cx))
+		if cx == 0 {
+			return v.SetCursor(0, cy)
+		} else {
+			return v.SetCursor(cx-1, cy)
+		}
+	}
+	return nil
+}
 
-		model.State.Messages = fmt.Sprintf("%d", cx)
-		updateMessages(g)
-
-		return v.SetCursor(cx-1, cy)
+func closeEditView(g *gocui.Gui, v *gocui.View) error {
+	if err := g.DeleteView("edit"); err != nil {
+		return err
+	}
+	if _, err := g.SetCurrentView("details"); err != nil {
+		return err
 	}
 	return nil
 }
