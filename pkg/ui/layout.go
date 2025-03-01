@@ -87,6 +87,7 @@ func Layout(g *gocui.Gui) error {
 			return err
 		}
 		v.Title = "Collections"
+		v.FrameColor = gocui.ColorGreen
 		v.Highlight = true
 		v.Autoscroll = false
 		v.Editable = false

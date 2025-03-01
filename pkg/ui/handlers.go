@@ -120,6 +120,8 @@ func nextView(g *gocui.Gui, v *gocui.View) error {
 		nextView = "collections"
 	}
 
+	v.FrameColor = gocui.ColorDefault
+
 	if _, err := g.SetCurrentView(nextView); err != nil {
 		return err
 	}
@@ -136,6 +138,7 @@ func nextView(g *gocui.Gui, v *gocui.View) error {
 			return err
 		}
 		nextV.Highlight = true
+		nextV.FrameColor = gocui.ColorGreen
 		nextV.SetCursor(0, 0)
 	}
 
