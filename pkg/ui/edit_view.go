@@ -9,17 +9,16 @@ import (
 )
 
 var lineToEdit string
+var lineToEditNumber int
 
 func editView(g *gocui.Gui) error {
 	maxX, maxY := g.Size()
-	if v, err := g.SetView("edit", maxX/2-30, maxY/2, maxX/2+30, maxY/2+2, 0); err != nil {
+	if v, err := g.SetView("edit", maxX/2-30, maxY/2-5, maxX/2+30, maxY/2-3, 0); err != nil {
 		if !errors.Is(err, gocui.ErrUnknownView) {
 			return err
 		}
-		v.Title = "Editor (Ctrl+S: Save, Esc: Cancel)"
+		v.Title = "Editor"
 		v.Editable = true
-		// v.Highlight = true
-		// v.Wrap = true
 		v.SelBgColor = gocui.ColorGreen
 		v.Editor = gocui.DefaultEditor
 		updateEdit(g, insertChar(lineToEdit, '█', 0))
@@ -28,6 +27,21 @@ func editView(g *gocui.Gui) error {
 		if _, err := g.SetCurrentView("edit"); err != nil {
 			return err
 		}
+		v.FrameColor = gocui.ColorGreen
+	}
+	if v, err := g.SetView("edit_blank_line", maxX/2-30, maxY/2-3, maxX/2+30, maxY/2-2, 0); err != nil {
+		if !errors.Is(err, gocui.ErrUnknownView) {
+			return err
+		}
+		v.Frame = false
+		fmt.Fprintln(v, " ii")
+	}
+	if v, err := g.SetView("edit_info", maxX/2-30, maxY/2-2, maxX/2+30, maxY/2, 0); err != nil {
+		if !errors.Is(err, gocui.ErrUnknownView) {
+			return err
+		}
+		v.Title = "Keyboard shortcuts"
+		fmt.Fprintln(v, "Ctrl+S: Save | Esc: Cancel")
 	}
 	return nil
 }
@@ -94,6 +108,12 @@ func EditCursorLeft(g *gocui.Gui, v *gocui.View) error {
 
 func closeEditView(g *gocui.Gui, v *gocui.View) error {
 	if err := g.DeleteView("edit"); err != nil {
+		return err
+	}
+	if err := g.DeleteView("edit_blank_line"); err != nil {
+		return err
+	}
+	if err := g.DeleteView("edit_info"); err != nil {
 		return err
 	}
 	if _, err := g.SetCurrentView("details"); err != nil {
