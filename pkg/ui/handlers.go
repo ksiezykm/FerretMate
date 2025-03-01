@@ -46,12 +46,7 @@ func CursorDown(g *gocui.Gui, v *gocui.View) error {
 	case "documents":
 		max = len(model.State.Documents) - 1
 	case "details":
-		jsonDoc, err := json.MarshalIndent(model.State.DocumentDetails, "", "  ")
-		if err != nil {
-			log.Println("Error converting document to JSON:", err)
-			return nil
-		}
-		lines := strings.Split(string(jsonDoc), "\n")
+		lines := strings.Split(model.State.DocumentDetails, "\n")
 		max = len(lines) - 1
 	}
 
@@ -97,10 +92,16 @@ func selectItem(g *gocui.Gui, v *gocui.View) error {
 		updateDocuments(g)
 	case "documents":
 		model.State.SelectedDocument = selected
-		model.State.DocumentDetails, err = db.GetDocumentByID(model.State.DBname, model.State.SelectedCollection, selected)
+		documentDromDB, err := db.GetDocumentByID(model.State.DBname, model.State.SelectedCollection, selected)
 		if err != nil {
 			log.Fatalf("Failed to retrieve Document: %v", err)
 		}
+		jsonDoc, err := json.MarshalIndent(documentDromDB, "", "  ")
+		if err != nil {
+			log.Println("Error converting document to JSON:", err)
+			return nil
+		}
+		model.State.DocumentDetails = string(jsonDoc)
 		updateDocumentDetails(g)
 	}
 
@@ -154,6 +155,7 @@ func getLine(g *gocui.Gui, v *gocui.View) error {
 		l = ""
 	}
 
+	lineToEditNumber = cy
 	lineToEdit = l
 
 	if err := editView(g); err != nil {
@@ -163,46 +165,23 @@ func getLine(g *gocui.Gui, v *gocui.View) error {
 	return nil
 }
 
-// RegisterKeyBindings sets up all keybindings
-func RegisterKeyBindings(g *gocui.Gui) error {
-	if err := g.SetKeybinding("", gocui.KeyArrowUp, gocui.ModNone, CursorUp); err != nil {
-		return err
+func SaveChangesToEditedDocument(g *gocui.Gui, v *gocui.View) error {
+	var line string
+	var err error
+
+	_, cy := v.Cursor()
+	if line, err = v.Line(cy); err != nil {
+		line = ""
 	}
-	if err := g.SetKeybinding("collections", gocui.KeyArrowDown, gocui.ModNone, CursorDown); err != nil {
-		return err
-	}
-	if err := g.SetKeybinding("documents", gocui.KeyArrowDown, gocui.ModNone, CursorDown); err != nil {
-		return err
-	}
-	if err := g.SetKeybinding("details", gocui.KeyArrowDown, gocui.ModNone, CursorDown); err != nil {
-		return err
-	}
-	if err := g.SetKeybinding("", gocui.KeyCtrlC, gocui.ModNone, Quit); err != nil {
-		return err
-	}
-	if err := g.SetKeybinding("", gocui.KeyEnter, gocui.ModNone, selectItem); err != nil {
-		return err
-	}
-	if err := g.SetKeybinding("collections", gocui.KeyTab, gocui.ModNone, nextView); err != nil {
-		return err
-	}
-	if err := g.SetKeybinding("documents", gocui.KeyTab, gocui.ModNone, nextView); err != nil {
-		return err
-	}
-	if err := g.SetKeybinding("details", gocui.KeyTab, gocui.ModNone, nextView); err != nil {
-		return err
-	}
-	if err := g.SetKeybinding("details", gocui.KeyEnter, gocui.ModNone, getLine); err != nil {
-		return err
-	}
-	if err := g.SetKeybinding("edit", gocui.KeyArrowRight, gocui.ModNone, EditCursorRight); err != nil {
-		return err
-	}
-	if err := g.SetKeybinding("edit", gocui.KeyArrowLeft, gocui.ModNone, EditCursorLeft); err != nil {
-		return err
-	}
-	if err := g.SetKeybinding("edit", gocui.KeyEsc, gocui.ModNone, closeEditView); err != nil {
-		return err
-	}
+
+	line = strings.ReplaceAll(line, "█", "")
+	lines := strings.Split(model.State.DocumentDetails, "\n")
+
+	lines[lineToEditNumber] = line
+
+	model.State.DocumentDetails = strings.Join(lines, "\n")
+
+	updateDocumentDetails(g)
+
 	return nil
 }

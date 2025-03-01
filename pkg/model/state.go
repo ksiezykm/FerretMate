@@ -1,7 +1,6 @@
 package model
 
 import (
-	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -10,7 +9,7 @@ type AppState struct {
 	DBclient           *mongo.Client
 	Collections        []string
 	Documents          []string
-	DocumentDetails    bson.M
+	DocumentDetails    string
 	SelectedCollection string
 	SelectedDocument   string
 	Messages           string

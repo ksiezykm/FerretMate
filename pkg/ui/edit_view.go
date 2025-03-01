@@ -34,7 +34,6 @@ func editView(g *gocui.Gui) error {
 			return err
 		}
 		v.Frame = false
-		fmt.Fprintln(v, " ii")
 	}
 	if v, err := g.SetView("edit_info", maxX/2-30, maxY/2-2, maxX/2+30, maxY/2, 0); err != nil {
 		if !errors.Is(err, gocui.ErrUnknownView) {
@@ -116,8 +115,12 @@ func closeEditView(g *gocui.Gui, v *gocui.View) error {
 	if err := g.DeleteView("edit_info"); err != nil {
 		return err
 	}
+	if err := g.DeleteView("messages"); err != nil {
+		return err
+	}
 	if _, err := g.SetCurrentView("details"); err != nil {
 		return err
 	}
 	return nil
+
 }

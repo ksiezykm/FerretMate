@@ -1,9 +1,7 @@
 package ui
 
 import (
-	"encoding/json"
 	"fmt"
-	"log"
 
 	"github.com/awesome-gocui/gocui"
 	"github.com/ksiezykm/FerretMate/pkg/model"
@@ -42,12 +40,8 @@ func updateDocumentDetails(g *gocui.Gui) error {
 		return err
 	}
 	v.Clear()
-	jsonDoc, err := json.MarshalIndent(model.State.DocumentDetails, "", "  ") // Format the JSON
-	if err != nil {
-		log.Println("Błąd konwersji dokumentu na JSON:", err)
-		return nil
-	}
-	fmt.Fprintln(v, string(jsonDoc))
+
+	fmt.Fprintln(v, model.State.DocumentDetails)
 	v.SetOrigin(0, 0)
 	return nil
 }
@@ -139,11 +133,22 @@ func Layout(g *gocui.Gui) error {
 	}
 
 	// Bottom panel for messages
+
 	if v, err := g.SetView("messages", 0, maxY-3, maxX-1, maxY-1, 0); err != nil {
 		if err != gocui.ErrUnknownView {
 			return err
 		}
 		v.Title = "Messages"
+		v.Autoscroll = false
+		v.Editable = false
+		v.Wrap = true
+	}
+
+	if v, err := g.SetView("test", 0, maxY-3, maxX-1, maxY-1, 0); err != nil {
+		if err != gocui.ErrUnknownView {
+			return err
+		}
+		v.Title = "Test"
 		v.Autoscroll = false
 		v.Editable = false
 		v.Wrap = true
