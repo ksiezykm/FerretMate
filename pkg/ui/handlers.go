@@ -156,13 +156,15 @@ func getLine(g *gocui.Gui, v *gocui.View) error {
 		l = ""
 	}
 
-	lineToEditNumber = cy
-	lineToEdit = l
+	if !strings.Contains(l, "_id") {
 
-	if err := editView(g); err != nil {
-		return err
+		lineToEditNumber = cy
+		lineToEdit = l
+
+		if err := editView(g); err != nil {
+			return err
+		}
 	}
-
 	return nil
 }
 

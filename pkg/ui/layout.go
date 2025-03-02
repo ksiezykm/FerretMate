@@ -121,7 +121,7 @@ func Layout(g *gocui.Gui) error {
 		v.Highlight = false
 		v.SelFgColor = gocui.ColorGreen
 		v.Autoscroll = false
-		v.Editable = true
+		v.Editable = false
 		v.Wrap = true
 		// if selectedDocument != nil {
 		//      // Serialize the selected document to JSON for display
@@ -139,16 +139,6 @@ func Layout(g *gocui.Gui) error {
 			return err
 		}
 		v.Title = "Messages"
-		v.Autoscroll = false
-		v.Editable = false
-		v.Wrap = true
-	}
-
-	if v, err := g.SetView("test", 0, maxY-3, maxX-1, maxY-1, 0); err != nil {
-		if err != gocui.ErrUnknownView {
-			return err
-		}
-		v.Title = "Test"
 		v.Autoscroll = false
 		v.Editable = false
 		v.Wrap = true
