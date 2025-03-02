@@ -8,10 +8,10 @@ import (
 
 	"github.com/awesome-gocui/gocui"
 	"github.com/ksiezykm/FerretMate/pkg/config"
-// 	// "github.com/ksiezykm/FerretMate/pkg/db"
-// 	// "github.com/ksiezykm/FerretMate/pkg/model"
-// 	// "github.com/ksiezykm/FerretMate/pkg/ui"
-// )
+	"github.com/ksiezykm/FerretMate/pkg/db"
+	"github.com/ksiezykm/FerretMate/pkg/model"
+	"github.com/ksiezykm/FerretMate/pkg/ui"
+)
 
 func main() {
 
