@@ -3,6 +3,7 @@ package ui
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"strings"
 
@@ -46,7 +47,7 @@ func CursorDown(g *gocui.Gui, v *gocui.View) error {
 	case "documents":
 		max = len(model.State.Documents) - 1
 	case "details":
-		lines := strings.Split(model.State.DocumentDetails, "\n")
+		lines := strings.Split(model.State.DocumentContent, "\n")
 		max = len(lines) - 1
 	}
 
@@ -101,7 +102,7 @@ func selectItem(g *gocui.Gui, v *gocui.View) error {
 			log.Println("Error converting document to JSON:", err)
 			return nil
 		}
-		model.State.DocumentDetails = string(jsonDoc)
+		model.State.DocumentContent = string(jsonDoc)
 		updateDocumentDetails(g)
 	}
 
@@ -175,13 +176,18 @@ func SaveChangesToEditedDocument(g *gocui.Gui, v *gocui.View) error {
 	}
 
 	line = strings.ReplaceAll(line, "█", "")
-	lines := strings.Split(model.State.DocumentDetails, "\n")
+	lines := strings.Split(model.State.DocumentContent, "\n")
 
 	lines[lineToEditNumber] = line
 
-	model.State.DocumentDetails = strings.Join(lines, "\n")
+	model.State.DocumentContent = strings.Join(lines, "\n")
 
 	updateDocumentDetails(g)
+
+	err = db.UpdateDocumentByID(model.State.DBname, model.State.SelectedCollection, model.State.SelectedDocument, model.State.DocumentContent)
+	if err != nil {
+		fmt.Println("Error UpdateDocumentByID:" + err.Error())
+	}
 
 	return nil
 }

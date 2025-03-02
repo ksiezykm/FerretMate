@@ -41,7 +41,7 @@ func updateDocumentDetails(g *gocui.Gui) error {
 	}
 	v.Clear()
 
-	fmt.Fprintln(v, model.State.DocumentDetails)
+	fmt.Fprintln(v, model.State.DocumentContent)
 	v.SetOrigin(0, 0)
 	return nil
 }

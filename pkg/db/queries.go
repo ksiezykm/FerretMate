@@ -2,6 +2,7 @@ package db
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"log"
 
@@ -82,4 +83,51 @@ func GetDocumentByID(dbName, collectionName, documentID string) (bson.M, error) 
 	}
 
 	return document, nil
+}
+
+func UpdateDocumentByID(dbName, collectionName, documentID, documentContent string) error {
+	collection := model.State.DBclient.Database(dbName).Collection(collectionName)
+
+	// Attempt to convert the identifier to bson.ObjectID
+	objID, err := primitive.ObjectIDFromHex(documentID)
+	filter := bson.M{"_id": documentID} // Default filter by string
+	if err == nil {
+		filter = bson.M{"_id": objID} // Filter by bson.ObjectID
+	}
+
+	var data map[string]interface{}
+
+	// Dekodowanie JSON-a do mapy.
+	err = json.Unmarshal([]byte(documentContent), &data)
+	if err != nil {
+		return fmt.Errorf("błąd podczas dekodowania JSON: %w", err)
+	}
+
+	// Usunięcie pola "_id" z mapy, jeśli istnieje.
+	delete(data, "_id")
+
+	// Kodowanie zmodyfikowanej mapy z powrotem do JSON-a.
+	modifiedJSON, err := json.Marshal(data)
+	if err != nil {
+		return fmt.Errorf("błąd podczas kodowania JSON: %w", err)
+	}
+
+	// Parsing JSON string to bson.M
+	var update bson.M
+	err = json.Unmarshal([]byte(modifiedJSON), &update)
+	if err != nil {
+		return fmt.Errorf("error during JSON parsing: %w", err)
+	}
+
+	// Performing the update
+	updateResult, err := collection.UpdateOne(context.TODO(), filter, bson.M{"$set": update})
+	if err != nil {
+		return fmt.Errorf("error during document update: %w", err)
+	}
+
+	if updateResult.MatchedCount == 0 {
+		return fmt.Errorf("document with ID %s not found", documentID)
+	}
+
+	return nil
 }

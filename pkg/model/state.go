@@ -9,12 +9,10 @@ type AppState struct {
 	DBclient           *mongo.Client
 	Collections        []string
 	Documents          []string
-	DocumentDetails    string
+	DocumentContent    string
 	SelectedCollection string
 	SelectedDocument   string
 	Messages           string
-	LineToEdit         string
-	EditCursorPos      int
 }
 
 var State AppState
