@@ -3,7 +3,6 @@ package ui
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 	"strings"
 
@@ -186,10 +185,7 @@ func SaveChangesToEditedDocument(g *gocui.Gui, v *gocui.View) error {
 
 	updateDocumentDetails(g)
 
-	err = db.UpdateDocumentByID(model.State.DBname, model.State.SelectedCollection, model.State.SelectedDocument, model.State.DocumentContent)
-	if err != nil {
-		fmt.Println("Error UpdateDocumentByID:" + err.Error())
-	}
+	db.UpdateDocumentByID(model.State.DBname, model.State.SelectedCollection, model.State.SelectedDocument, model.State.DocumentContent)
 
 	return nil
 }
