@@ -26,7 +26,7 @@ func main() {
 	}
 
 	// Connect to DB and get collections
-	model.State.DBclient, err = db.ConnectToDB()
+	model.State.DBclient, err = db.ConnectToDB(configMap["produkcja"])
 	if err != nil {
 		log.Fatalf("Failed to connect to FerretDB: %v", err)
 	}
