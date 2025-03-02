@@ -1,19 +1,31 @@
 package main
 
 import (
+	"fmt"
 	"log"
 
 	"context"
 
 	"github.com/awesome-gocui/gocui"
-	"github.com/ksiezykm/FerretMate/pkg/db"
-	"github.com/ksiezykm/FerretMate/pkg/model"
-	"github.com/ksiezykm/FerretMate/pkg/ui"
-)
+	"github.com/ksiezykm/FerretMate/pkg/config"
+// 	// "github.com/ksiezykm/FerretMate/pkg/db"
+// 	// "github.com/ksiezykm/FerretMate/pkg/model"
+// 	// "github.com/ksiezykm/FerretMate/pkg/ui"
+// )
 
 func main() {
+
+	// Read config
+	configMap, err := config.ReadConfig()
+	if err != nil {
+		log.Fatalf("Failed to read config: %v", err)
+	}
+
+	for k, v := range configMap {
+		fmt.Println(k + " " + v.Username)
+	}
+
 	// Connect to DB and get collections
-	var err error
 	model.State.DBclient, err = db.ConnectToDB()
 	if err != nil {
 		log.Fatalf("Failed to connect to FerretDB: %v", err)

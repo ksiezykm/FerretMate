@@ -8,35 +8,33 @@ import (
 )
 
 type DatabaseConfig struct {
-	Name     string `json:"name"`
 	Host     string `json:"host"`
 	Username string `json:"username"`
 	Password string `json:"password"`
 	Database string `json:"database"`
 }
 
-type Config struct {
-	Databases []DatabaseConfig `json:"databases"`
-}
-
-func loadConfig(file string) (Config, error) {
-	var config Config
+func loadConfigMap(file string) (map[string]DatabaseConfig, error) {
 	configFile, err := os.Open(file)
 	if err != nil {
-		return config, err
+		return nil, err
 	}
 	defer configFile.Close()
 
+	var configMap map[string]DatabaseConfig
 	decoder := json.NewDecoder(configFile)
-	err = decoder.Decode(&config)
-	return config, err
+	err = decoder.Decode(&configMap)
+	if err != nil {
+		return nil, err
+	}
+	return configMap, nil
 }
 
-func readConfig() (Config, error) {
+func ReadConfig() (map[string]DatabaseConfig, error) {
 	configDir := filepath.Join(os.Getenv("HOME"), ".config", "ferretmate")
 	configFile := filepath.Join(configDir, "config.json")
 
-	config, err := loadConfig(configFile)
+	config, err := loadConfigMap(configFile)
 	if err != nil {
 		return config, fmt.Errorf("Error readConfig: %w", err)
 	}

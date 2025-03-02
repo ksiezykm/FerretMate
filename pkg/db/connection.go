@@ -28,3 +28,22 @@ func ConnectToDB() (*mongo.Client, error) {
 
 	return client, nil
 }
+// func ConnectToDBJSON(conf config.Config) (*mongo.Client, error) {
+// 	uri, err := config.ReadDBURI(".env")
+// 	if err != nil {
+// 		return nil, err
+// 	}
+
+// 	clientOptions := options.Client().ApplyURI(uri)
+// 	client, err := mongo.Connect(context.TODO(), clientOptions)
+// 	if err != nil {
+// 		return nil, err
+// 	}
+
+// 	// Verify connection
+// 	if err := client.Ping(context.TODO(), nil); err != nil {
+// 		return nil, err
+// 	}
+
+// 	return client, nil
+// }
