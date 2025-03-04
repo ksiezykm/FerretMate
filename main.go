@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 
 	"context"
@@ -19,10 +18,6 @@ func main() {
 	configMap, err := config.ReadConfig()
 	if err != nil {
 		log.Fatalf("Failed to read config: %v", err)
-	}
-
-	for k, v := range configMap {
-		fmt.Println(k + " " + v.Username)
 	}
 
 	// Connect to DB and get collections
