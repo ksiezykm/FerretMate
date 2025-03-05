@@ -76,7 +76,7 @@ func Layout(g *gocui.Gui) error {
 	maxX, maxY := g.Size()
 
 	// Left panel for database
-	if v, err := g.SetView("database", 0, 0, maxX/3, (maxY-3)/2, 0); err != nil {
+	if v, err := g.SetView("database", 0, 0, maxX/4, (maxY-3)/2, 0); err != nil {
 		if err != gocui.ErrUnknownView {
 			return err
 		}
@@ -89,13 +89,13 @@ func Layout(g *gocui.Gui) error {
 		for _, name := range model.State.Collections {
 			fmt.Fprintln(v, name)
 		}
-		if _, err := g.SetCurrentView("database"); err != nil {
-			return err
-		}
+		// if _, err := g.SetCurrentView("database"); err != nil {
+		// 	return err
+		// }
 	}
 
 	// Left panel for collections
-	if v, err := g.SetView("collections", 0, 1+(maxY-3)/2, maxX/3, maxY-3, 0); err != nil {
+	if v, err := g.SetView("collections", 0, 1+(maxY-3)/2, maxX/4, maxY-3, 0); err != nil {
 		if err != gocui.ErrUnknownView {
 			return err
 		}
@@ -108,13 +108,13 @@ func Layout(g *gocui.Gui) error {
 		for _, name := range model.State.Collections {
 			fmt.Fprintln(v, name)
 		}
-		// if _, err := g.SetCurrentView("collections"); err != nil {
-		// 	return err
-		// }
+		if _, err := g.SetCurrentView("collections"); err != nil {
+			return err
+		}
 	}
 
 	// Middle panel for documents list
-	if v, err := g.SetView("documents", maxX/3+1, 0, 2*maxX/3, maxY-3, 0); err != nil {
+	if v, err := g.SetView("documents", maxX/4+1, 0, 2*maxX/4, maxY-3, 0); err != nil {
 		if err != gocui.ErrUnknownView {
 			return err
 		}
@@ -132,7 +132,7 @@ func Layout(g *gocui.Gui) error {
 	}
 
 	// Right panel for selected document details
-	if v, err := g.SetView("details", 2*maxX/3+1, 0, maxX-1, maxY-3, 0); err != nil {
+	if v, err := g.SetView("details", 2*maxX/4+1, 0, maxX-1, maxY-3, 0); err != nil {
 		if err != gocui.ErrUnknownView {
 			return err
 		}
