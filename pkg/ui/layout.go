@@ -75,20 +75,41 @@ func updateEdit(g *gocui.Gui, line string) error {
 func Layout(g *gocui.Gui) error {
 	maxX, maxY := g.Size()
 
+	// Title panel
+	if v, err := g.SetView("title", 0, 0, maxX/4, 2, 0); err != nil {
+		if err != gocui.ErrUnknownView {
+			return err
+		}
+		//v.Title = "Databases"
+		v.FrameColor = gocui.ColorGreen
+		//v.Highlight = true
+		v.Autoscroll = false
+		v.Editable = false
+		v.SelFgColor = gocui.ColorGreen
+
+		fmt.Fprintln(v, "*****FerretMate*****")
+		// for _, name := range model.State.Collections {
+		// 	fmt.Fprintln(v, name)
+		// }
+		// if _, err := g.SetCurrentView("database"); err != nil {
+		// 	return err
+		// }
+	}
+
 	// Left panel for database
-	if v, err := g.SetView("database", 0, 0, maxX/4, (maxY-3)/2, 0); err != nil {
+	if v, err := g.SetView("database", 0, 3, maxX/4, (maxY-3)/2, 0); err != nil {
 		if err != gocui.ErrUnknownView {
 			return err
 		}
 		v.Title = "Databases"
 		v.FrameColor = gocui.ColorGreen
-		v.Highlight = true
+		//v.Highlight = true
 		v.Autoscroll = false
 		v.Editable = false
 		v.SelFgColor = gocui.ColorGreen
-		for _, name := range model.State.Collections {
-			fmt.Fprintln(v, name)
-		}
+		// for _, name := range model.State.Collections {
+		// 	fmt.Fprintln(v, name)
+		// }
 		// if _, err := g.SetCurrentView("database"); err != nil {
 		// 	return err
 		// }
