@@ -75,8 +75,27 @@ func updateEdit(g *gocui.Gui, line string) error {
 func Layout(g *gocui.Gui) error {
 	maxX, maxY := g.Size()
 
+	// Left panel for database
+	if v, err := g.SetView("database", 0, 0, maxX/3, (maxY-3)/2, 0); err != nil {
+		if err != gocui.ErrUnknownView {
+			return err
+		}
+		v.Title = "Databases"
+		v.FrameColor = gocui.ColorGreen
+		v.Highlight = true
+		v.Autoscroll = false
+		v.Editable = false
+		v.SelFgColor = gocui.ColorGreen
+		for _, name := range model.State.Collections {
+			fmt.Fprintln(v, name)
+		}
+		if _, err := g.SetCurrentView("database"); err != nil {
+			return err
+		}
+	}
+
 	// Left panel for collections
-	if v, err := g.SetView("collections", 0, 0, maxX/3, maxY-3, 0); err != nil {
+	if v, err := g.SetView("collections", 0, 1+(maxY-3)/2, maxX/3, maxY-3, 0); err != nil {
 		if err != gocui.ErrUnknownView {
 			return err
 		}
@@ -89,9 +108,9 @@ func Layout(g *gocui.Gui) error {
 		for _, name := range model.State.Collections {
 			fmt.Fprintln(v, name)
 		}
-		if _, err := g.SetCurrentView("collections"); err != nil {
-			return err
-		}
+		// if _, err := g.SetCurrentView("collections"); err != nil {
+		// 	return err
+		// }
 	}
 
 	// Middle panel for documents list
