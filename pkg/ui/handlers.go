@@ -89,6 +89,8 @@ func selectItem(g *gocui.Gui, v *gocui.View) error {
 		if err != nil {
 			log.Fatalf("Failed to retrieve collections: %v", err)
 		}
+		model.State.DocumentContent = ""
+		updateDocumentDetails(g)
 		updateDocuments(g)
 	case "documents":
 		model.State.SelectedDocument = selected
