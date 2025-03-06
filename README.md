@@ -15,7 +15,7 @@ FerretMate is an open-source, terminal-based client for managing FerretDB, built
 
 1. Clone the repository:
     ```bash
-    git clone https://github.com/yourusername/FerretMate.git
+    git clone https://github.com/ksiezykm/FerretMate.git
     ```
 
 2. Navigate into the project folder:
