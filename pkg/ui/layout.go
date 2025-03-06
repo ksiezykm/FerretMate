@@ -133,6 +133,7 @@ func Layout(g *gocui.Gui) error {
 			return err
 		}
 	}
+	
 
 	// Middle panel for documents list
 	if v, err := g.SetView("documents", maxX/4+1, 0, 2*maxX/4, maxY-3, 0); err != nil {

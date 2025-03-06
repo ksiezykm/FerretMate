@@ -4,13 +4,13 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/ksiezykm/FerretMate/pkg/config"
+	"github.com/ksiezykm/FerretMate/pkg/model"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 // connectToDB connects to FerretDB using DatabaseConfig fields
-func ConnectToDB(dbConfig config.DatabaseConfig) (*mongo.Client, error) {
+func ConnectToDB(dbConfig model.DatabaseConfig) (*mongo.Client, error) {
 
 	uri := "mongodb://" + dbConfig.Username + ":" + dbConfig.Password + "@" + dbConfig.Host + "/" + dbConfig.Database
 

@@ -5,23 +5,18 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"github.com/ksiezykm/FerretMate/pkg/model"
 )
 
-type DatabaseConfig struct {
-	Host     string `json:"host"`
-	Username string `json:"username"`
-	Password string `json:"password"`
-	Database string `json:"database"`
-}
 
-func loadConfigMap(file string) (map[string]DatabaseConfig, error) {
+func loadConfigMap(file string) (map[string]model.DatabaseConfig, error) {
 	configFile, err := os.Open(file)
 	if err != nil {
 		return nil, err
 	}
 	defer configFile.Close()
 
-	var configMap map[string]DatabaseConfig
+	var configMap map[string]model.DatabaseConfig
 	decoder := json.NewDecoder(configFile)
 	err = decoder.Decode(&configMap)
 	if err != nil {
@@ -30,7 +25,7 @@ func loadConfigMap(file string) (map[string]DatabaseConfig, error) {
 	return configMap, nil
 }
 
-func ReadConfig() (map[string]DatabaseConfig, error) {
+func ReadConfig() (map[string]model.DatabaseConfig, error) {
 	configDir := filepath.Join(os.Getenv("HOME"), ".config", "ferretmate")
 	configFile := filepath.Join(configDir, "config.json")
 
