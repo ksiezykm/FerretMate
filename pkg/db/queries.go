@@ -74,7 +74,7 @@ func GetDocumentByID(dbName, collectionName, documentID string) (bson.M, error) 
 	if err == nil {
 		filter = bson.M{"_id": objID} // Filter by bson.ObjectID
 	}
-
+	
 	// Execute the query
 	var document bson.M
 	err = collection.FindOne(context.TODO(), filter).Decode(&document)

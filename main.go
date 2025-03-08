@@ -20,6 +20,8 @@ func main() {
 		log.Fatalf("Failed to read config: %v", err)
 	}
 
+	model.State.Config = configMap
+
 	// Connect to DB and get collections
 	model.State.DBclient, err = db.ConnectToDB(configMap["produkcja"])
 	if err != nil {

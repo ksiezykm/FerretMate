@@ -80,9 +80,6 @@ func Layout(g *gocui.Gui) error {
 		if err != gocui.ErrUnknownView {
 			return err
 		}
-		//v.Title = "Databases"
-		v.FrameColor = gocui.ColorGreen
-		//v.Highlight = true
 		v.Autoscroll = false
 		v.Editable = false
 		v.SelFgColor = gocui.ColorGreen
@@ -103,16 +100,16 @@ func Layout(g *gocui.Gui) error {
 		}
 		v.Title = "Databases"
 		v.FrameColor = gocui.ColorGreen
-		//v.Highlight = true
+		v.Highlight = true
 		v.Autoscroll = false
 		v.Editable = false
 		v.SelFgColor = gocui.ColorGreen
-		// for _, name := range model.State.Collections {
-		// 	fmt.Fprintln(v, name)
-		// }
-		// if _, err := g.SetCurrentView("database"); err != nil {
-		// 	return err
-		// }
+		for k, _ := range model.State.Config {
+			fmt.Fprintln(v, k)
+		}
+		if _, err := g.SetCurrentView("database"); err != nil {
+			return err
+		}
 	}
 
 	// Left panel for collections
@@ -126,14 +123,13 @@ func Layout(g *gocui.Gui) error {
 		v.Autoscroll = false
 		v.Editable = false
 		v.SelFgColor = gocui.ColorGreen
-		for _, name := range model.State.Collections {
-			fmt.Fprintln(v, name)
-		}
-		if _, err := g.SetCurrentView("collections"); err != nil {
-			return err
-		}
+		// for _, name := range model.State.Collections {
+		// 	fmt.Fprintln(v, name)
+		// }
+		// if _, err := g.SetCurrentView("collections"); err != nil {
+		// 	return err
+		// }
 	}
-	
 
 	// Middle panel for documents list
 	if v, err := g.SetView("documents", maxX/4+1, 0, 2*maxX/4, maxY-3, 0); err != nil {
