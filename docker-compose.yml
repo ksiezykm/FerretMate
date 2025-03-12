@@ -21,7 +21,6 @@ services:
       - n2
 
 networks:
-  n1:
   n2:
   
 
