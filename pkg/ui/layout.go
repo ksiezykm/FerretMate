@@ -85,16 +85,10 @@ func Layout(g *gocui.Gui) error {
 		v.SelFgColor = gocui.ColorGreen
 
 		fmt.Fprintln(v, "*****FerretMate*****")
-		// for _, name := range model.State.Collections {
-		// 	fmt.Fprintln(v, name)
-		// }
-		// if _, err := g.SetCurrentView("database"); err != nil {
-		// 	return err
-		// }
 	}
 
 	// Left panel for database
-	if v, err := g.SetView("database", 0, 3, maxX/4, (maxY-3)/2, 0); err != nil {
+	if v, err := g.SetView("databases", 0, 3, maxX/4, (maxY-3)/2, 0); err != nil {
 		if err != gocui.ErrUnknownView {
 			return err
 		}
@@ -107,7 +101,7 @@ func Layout(g *gocui.Gui) error {
 		for k, _ := range model.State.Config {
 			fmt.Fprintln(v, k)
 		}
-		if _, err := g.SetCurrentView("database"); err != nil {
+		if _, err := g.SetCurrentView("databases"); err != nil {
 			return err
 		}
 	}
@@ -118,8 +112,7 @@ func Layout(g *gocui.Gui) error {
 			return err
 		}
 		v.Title = "Collections"
-		v.FrameColor = gocui.ColorGreen
-		v.Highlight = true
+		v.Highlight = false
 		v.Autoscroll = false
 		v.Editable = false
 		v.SelFgColor = gocui.ColorGreen

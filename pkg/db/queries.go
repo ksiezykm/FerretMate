@@ -19,6 +19,7 @@ func GetCollections(dbName string) ([]string, error) {
 		return nil, fmt.Errorf("failed to list collections: %w", err)
 	}
 	return collections, nil
+	
 }
 
 // GetDocuments retrieves documents from the specified collection.

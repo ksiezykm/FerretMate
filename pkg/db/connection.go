@@ -2,7 +2,6 @@ package db
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/ksiezykm/FerretMate/pkg/model"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -14,7 +13,7 @@ func ConnectToDB(dbConfig model.DatabaseConfig) (*mongo.Client, error) {
 
 	uri := "mongodb://" + dbConfig.Username + ":" + dbConfig.Password + "@" + dbConfig.Host + "/" + dbConfig.Database
 
-	fmt.Println(uri)
+	//fmt.Println(uri)
 	clientOptions := options.Client().ApplyURI(uri)
 	client, err := mongo.Connect(context.TODO(), clientOptions)
 	if err != nil {
@@ -25,6 +24,6 @@ func ConnectToDB(dbConfig model.DatabaseConfig) (*mongo.Client, error) {
 	if err := client.Ping(context.TODO(), nil); err != nil {
 		return nil, err
 	}
-
+	
 	return client, nil
 }

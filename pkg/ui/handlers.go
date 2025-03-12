@@ -6,6 +6,8 @@ import (
 	"log"
 	"strings"
 
+	"fmt"
+
 	"github.com/awesome-gocui/gocui"
 	"github.com/ksiezykm/FerretMate/pkg/db"
 	"github.com/ksiezykm/FerretMate/pkg/model"
@@ -41,6 +43,8 @@ func CursorDown(g *gocui.Gui, v *gocui.View) error {
 	_, vSize := v.Size()
 
 	switch currentView {
+	case "databases":
+		max = len(model.State.Config) - 1
 	case "collections":
 		max = len(model.State.Collections) - 1
 	case "documents":
@@ -75,6 +79,9 @@ func selectItem(g *gocui.Gui, v *gocui.View) error {
 	_, cy := v.Cursor()
 	lines := strings.Split(v.Buffer(), "\n")
 
+	model.State.Messages = fmt.Sprint(cy)
+	updateMessages(g)
+
 	selected := ""
 
 	if cy >= 0 && cy < len(lines)-1 {
@@ -83,11 +90,30 @@ func selectItem(g *gocui.Gui, v *gocui.View) error {
 	currentView := v.Name()
 
 	switch currentView {
-	case "collections":
-		model.State.SelectedCollection = selected
-		model.State.Documents, err = db.GetDocuments(model.State.DBname, selected)
+	case "databases":
+		model.State.Collections = nil
+
+		model.State.DBname = model.State.Config[selected].Database
+		model.State.DBclient, err = db.ConnectToDB(model.State.Config[selected])
+		if err != nil {
+			log.Fatalf("Failed to connect to DB: %v", err)
+		}
+		//defer model.State.DBclient.Disconnect(context.TODO())
+
+		model.State.Collections, err = db.GetCollections(model.State.DBname)
 		if err != nil {
 			log.Fatalf("Failed to retrieve collections: %v", err)
+		}
+		updateCollections(g)
+		model.State.DocumentContent = ""
+		updateDocumentDetails(g)
+		model.State.Documents = nil
+		updateDocuments(g)
+	case "collections":
+		model.State.SelectedCollection = selected
+		model.State.Documents, err = db.GetDocuments(model.State.DBname, model.State.SelectedCollection)
+		if err != nil {
+			log.Fatalf("Failed to retrieve collection: %v", err)
 		}
 		model.State.DocumentContent = ""
 		updateDocumentDetails(g)
@@ -115,12 +141,14 @@ func nextView(g *gocui.Gui, v *gocui.View) error {
 	nextView := ""
 
 	switch currentView {
+	case "databases":
+		nextView = "collections"
 	case "collections":
 		nextView = "documents"
 	case "documents":
 		nextView = "details"
 	case "details":
-		nextView = "collections"
+		nextView = "databases"
 	}
 
 	v.FrameColor = gocui.ColorDefault

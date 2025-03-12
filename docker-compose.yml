@@ -1,0 +1,29 @@
+services:
+  ps2:
+    image: ghcr.io/ferretdb/postgres-documentdb:17-0.102.0-ferretdb-2.0.0
+    platform: linux/amd64
+    environment:
+      POSTGRES_USER: usr_ps2
+      POSTGRES_PASSWORD: pass_ps2
+      POSTGRES_DB: postgres
+    volumes:
+      - ./ps2V:/var/lib/postgresql/data
+    networks:
+      - n2
+  fdb2:
+    image: ghcr.io/ferretdb/ferretdb:2
+    restart: on-failure
+    ports:
+      - 37021:27017
+    environment:
+      FERRETDB_POSTGRESQL_URL: postgres://usr_ps2:pass_ps2@ps2:5432/postgres
+    networks:
+      - n2
+
+networks:
+  n1:
+  n2:
+  
+
+
+
