@@ -240,5 +240,13 @@ func createNewDocument(g *gocui.Gui, v *gocui.View) error {
 	model.State.Messages = fmt.Sprint(insertedId)
 	updateMessages(g)
 
+	model.State.Documents, err = db.GetDocuments(model.State.DBname, model.State.SelectedCollection, model.State.DBclient)
+	if err != nil {
+		log.Fatalf("Failed to retrieve collection: %v", err)
+	}
+	model.State.DocumentContent = ""
+	updateDocumentDetails(g)
+	updateDocuments(g)
+
 	return nil
 }
