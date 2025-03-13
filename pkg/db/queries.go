@@ -98,16 +98,16 @@ func UpdateDocumentByID(dbName, collectionName, documentID, documentContent stri
 
 	var data map[string]interface{}
 
-	// Dekodowanie JSON-a do mapy.
+	// JSON-a to map.
 	err = json.Unmarshal([]byte(documentContent), &data)
 	if err != nil {
 		return fmt.Errorf("błąd podczas dekodowania JSON: %w", err)
 	}
 
-	// Usunięcie pola "_id" z mapy, jeśli istnieje.
+	// delete "_id" from map, if exist.
 	delete(data, "_id")
 
-	// Kodowanie zmodyfikowanej mapy z powrotem do JSON-a.
+	// map to JSON-a.
 	modifiedJSON, err := json.Marshal(data)
 	if err != nil {
 		return fmt.Errorf("błąd podczas kodowania JSON: %w", err)
