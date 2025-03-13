@@ -14,7 +14,7 @@ import (
 )
 
 // CursorUp moves the cursor up in the given view
-func CursorUp(g *gocui.Gui, v *gocui.View) error {
+func cursorUp(g *gocui.Gui, v *gocui.View) error {
 	if v == nil {
 		return nil
 	}
@@ -32,7 +32,7 @@ func CursorUp(g *gocui.Gui, v *gocui.View) error {
 }
 
 // CursorDown moves the cursor down in the given view
-func CursorDown(g *gocui.Gui, v *gocui.View) error {
+func cursorDown(g *gocui.Gui, v *gocui.View) error {
 	if v == nil {
 		return nil
 	}
@@ -70,7 +70,7 @@ func CursorDown(g *gocui.Gui, v *gocui.View) error {
 }
 
 // Quit exits the application
-func Quit(g *gocui.Gui, v *gocui.View) error {
+func quit(g *gocui.Gui, v *gocui.View) error {
 	return gocui.ErrQuit
 }
 
@@ -197,7 +197,7 @@ func getLine(g *gocui.Gui, v *gocui.View) error {
 	return nil
 }
 
-func SaveChangesToEditedDocument(g *gocui.Gui, v *gocui.View) error {
+func saveChangesToEditedDocument(g *gocui.Gui, v *gocui.View) error {
 	var line string
 	var err error
 

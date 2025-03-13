@@ -55,7 +55,7 @@ func insertChar(s string, char rune, index int) string {
 	return string(runes)
 }
 
-func EditCursorRight(g *gocui.Gui, v *gocui.View) error {
+func editCursorRight(g *gocui.Gui, v *gocui.View) error {
 	if v == nil {
 		return nil
 	}
@@ -77,7 +77,7 @@ func EditCursorRight(g *gocui.Gui, v *gocui.View) error {
 	}
 	return nil
 }
-func EditCursorLeft(g *gocui.Gui, v *gocui.View) error {
+func editCursorLeft(g *gocui.Gui, v *gocui.View) error {
 	if v == nil {
 		return nil
 	}

@@ -4,22 +4,22 @@ import "github.com/awesome-gocui/gocui"
 
 // RegisterKeyBindings sets up all keybindings
 func RegisterKeyBindings(g *gocui.Gui) error {
-	if err := g.SetKeybinding("", gocui.KeyArrowUp, gocui.ModNone, CursorUp); err != nil {
+	if err := g.SetKeybinding("", gocui.KeyArrowUp, gocui.ModNone, cursorUp); err != nil {
 		return err
 	}
-	if err := g.SetKeybinding("databases", gocui.KeyArrowDown, gocui.ModNone, CursorDown); err != nil {
+	if err := g.SetKeybinding("databases", gocui.KeyArrowDown, gocui.ModNone, cursorDown); err != nil {
 		return err
 	}
-	if err := g.SetKeybinding("collections", gocui.KeyArrowDown, gocui.ModNone, CursorDown); err != nil {
+	if err := g.SetKeybinding("collections", gocui.KeyArrowDown, gocui.ModNone, cursorDown); err != nil {
 		return err
 	}
-	if err := g.SetKeybinding("documents", gocui.KeyArrowDown, gocui.ModNone, CursorDown); err != nil {
+	if err := g.SetKeybinding("documents", gocui.KeyArrowDown, gocui.ModNone, cursorDown); err != nil {
 		return err
 	}
-	if err := g.SetKeybinding("details", gocui.KeyArrowDown, gocui.ModNone, CursorDown); err != nil {
+	if err := g.SetKeybinding("details", gocui.KeyArrowDown, gocui.ModNone, cursorDown); err != nil {
 		return err
 	}
-	if err := g.SetKeybinding("", gocui.KeyCtrlC, gocui.ModNone, Quit); err != nil {
+	if err := g.SetKeybinding("", gocui.KeyCtrlC, gocui.ModNone, quit); err != nil {
 		return err
 	}
 	if err := g.SetKeybinding("", gocui.KeyEnter, gocui.ModNone, selectItem); err != nil {
@@ -40,13 +40,13 @@ func RegisterKeyBindings(g *gocui.Gui) error {
 	if err := g.SetKeybinding("details", gocui.KeyEnter, gocui.ModNone, getLine); err != nil {
 		return err
 	}
-	if err := g.SetKeybinding("edit", gocui.KeyArrowRight, gocui.ModNone, EditCursorRight); err != nil {
+	if err := g.SetKeybinding("edit", gocui.KeyArrowRight, gocui.ModNone, editCursorRight); err != nil {
 		return err
 	}
-	if err := g.SetKeybinding("edit", gocui.KeyArrowLeft, gocui.ModNone, EditCursorLeft); err != nil {
+	if err := g.SetKeybinding("edit", gocui.KeyArrowLeft, gocui.ModNone, editCursorLeft); err != nil {
 		return err
 	}
-	if err := g.SetKeybinding("edit", gocui.KeyCtrlS, gocui.ModNone, SaveChangesToEditedDocument); err != nil {
+	if err := g.SetKeybinding("edit", gocui.KeyCtrlS, gocui.ModNone, saveChangesToEditedDocument); err != nil {
 		return err
 	}
 	if err := g.SetKeybinding("edit", gocui.KeyEsc, gocui.ModNone, closeEditView); err != nil {
