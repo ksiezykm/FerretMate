@@ -100,7 +100,7 @@ func selectItem(g *gocui.Gui, v *gocui.View) error {
 		}
 		//defer model.State.DBclient.Disconnect(context.TODO())
 
-		model.State.Collections, err = db.GetCollections(model.State.DBname)
+		model.State.Collections, err = db.GetCollections(model.State.DBname, model.State.DBclient)
 		if err != nil {
 			log.Fatalf("Failed to retrieve collections: %v", err)
 		}
@@ -111,7 +111,7 @@ func selectItem(g *gocui.Gui, v *gocui.View) error {
 		updateDocuments(g)
 	case "collections":
 		model.State.SelectedCollection = selected
-		model.State.Documents, err = db.GetDocuments(model.State.DBname, model.State.SelectedCollection)
+		model.State.Documents, err = db.GetDocuments(model.State.DBname, model.State.SelectedCollection, model.State.DBclient)
 		if err != nil {
 			log.Fatalf("Failed to retrieve collection: %v", err)
 		}
@@ -120,7 +120,7 @@ func selectItem(g *gocui.Gui, v *gocui.View) error {
 		updateDocuments(g)
 	case "documents":
 		model.State.SelectedDocument = selected
-		documentDromDB, err := db.GetDocumentByID(model.State.DBname, model.State.SelectedCollection, selected)
+		documentDromDB, err := db.GetDocumentByID(model.State.DBname, model.State.SelectedCollection, selected, model.State.DBclient)
 		if err != nil {
 			log.Fatalf("Failed to retrieve Document: %v", err)
 		}
@@ -215,7 +215,30 @@ func SaveChangesToEditedDocument(g *gocui.Gui, v *gocui.View) error {
 
 	updateDocumentDetails(g)
 
-	db.UpdateDocumentByID(model.State.DBname, model.State.SelectedCollection, model.State.SelectedDocument, model.State.DocumentContent)
+	db.UpdateDocumentByID(model.State.DBname, model.State.SelectedCollection, model.State.SelectedDocument, model.State.DocumentContent, model.State.DBclient)
+
+	return nil
+}
+
+func createNewDocument(g *gocui.Gui, v *gocui.View) error {
+	var err error
+	_, cy := v.Cursor()
+	lines := strings.Split(v.Buffer(), "\n")
+
+	selected := ""
+
+	if cy >= 0 && cy < len(lines)-1 {
+		selected = lines[cy]
+	}
+
+	model.State.SelectedCollection = selected
+	insertedId, err := db.CreateDocument(model.State.DBname, model.State.SelectedCollection, model.State.DBclient)
+	if err != nil {
+		log.Fatalf("Failed to create document: %v", err)
+	}
+
+	model.State.Messages = fmt.Sprint(insertedId)
+	updateMessages(g)
 
 	return nil
 }

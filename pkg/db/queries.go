@@ -6,25 +6,25 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/ksiezykm/FerretMate/pkg/model"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 // GetCollections retrieves the list of collections from the given database.
-func GetCollections(dbName string) ([]string, error) {
-	collections, err := model.State.DBclient.Database(dbName).ListCollectionNames(context.TODO(), bson.D{})
+func GetCollections(dbName string, client *mongo.Client) ([]string, error) {
+	collections, err := client.Database(dbName).ListCollectionNames(context.TODO(), bson.D{})
 	if err != nil {
 		return nil, fmt.Errorf("failed to list collections: %w", err)
 	}
 	return collections, nil
-	
+
 }
 
 // GetDocuments retrieves documents from the specified collection.
-func GetDocuments(dbName, collectionName string) ([]string, error) {
-	collection := model.State.DBclient.Database(dbName).Collection(collectionName)
+func GetDocuments(dbName, collectionName string, client *mongo.Client) ([]string, error) {
+	collection := client.Database(dbName).Collection(collectionName)
 
 	// Query options (you can customize)
 	findOptions := options.Find()
@@ -66,8 +66,8 @@ func GetDocuments(dbName, collectionName string) ([]string, error) {
 	return documentIDs, nil
 }
 
-func GetDocumentByID(dbName, collectionName, documentID string) (bson.M, error) {
-	collection := model.State.DBclient.Database(dbName).Collection(collectionName)
+func GetDocumentByID(dbName, collectionName, documentID string, client *mongo.Client) (bson.M, error) {
+	collection := client.Database(dbName).Collection(collectionName)
 
 	// Attempt to convert the identifier to bson.ObjectID
 	objID, err := primitive.ObjectIDFromHex(documentID)
@@ -75,7 +75,7 @@ func GetDocumentByID(dbName, collectionName, documentID string) (bson.M, error) 
 	if err == nil {
 		filter = bson.M{"_id": objID} // Filter by bson.ObjectID
 	}
-	
+
 	// Execute the query
 	var document bson.M
 	err = collection.FindOne(context.TODO(), filter).Decode(&document)
@@ -86,8 +86,8 @@ func GetDocumentByID(dbName, collectionName, documentID string) (bson.M, error) 
 	return document, nil
 }
 
-func UpdateDocumentByID(dbName, collectionName, documentID, documentContent string) error {
-	collection := model.State.DBclient.Database(dbName).Collection(collectionName)
+func UpdateDocumentByID(dbName, collectionName, documentID, documentContent string, client *mongo.Client) error {
+	collection := client.Database(dbName).Collection(collectionName)
 
 	// Attempt to convert the identifier to bson.ObjectID
 	objID, err := primitive.ObjectIDFromHex(documentID)
@@ -131,4 +131,48 @@ func UpdateDocumentByID(dbName, collectionName, documentID, documentContent stri
 	}
 
 	return nil
+}
+
+// DeleteDocumentByID deletes a document from the specified collection by its ID.
+func DeleteDocumentByID(dbName, collectionName, documentID string, client *mongo.Client) error {
+	collection := client.Database(dbName).Collection(collectionName)
+
+	// Attempt to convert the identifier to bson.ObjectID
+	objID, err := primitive.ObjectIDFromHex(documentID)
+	filter := bson.M{"_id": documentID} // Default filter by string
+	if err == nil {
+		filter = bson.M{"_id": objID} // Filter by bson.ObjectID
+	}
+
+	// Execute the delete operation
+	result, err := collection.DeleteOne(context.TODO(), filter)
+	if err != nil {
+		return fmt.Errorf("error deleting document: %w", err)
+	}
+
+	// Check if any document was deleted
+	if result.DeletedCount == 0 {
+		return fmt.Errorf("document with ID %s not found", documentID)
+	}
+
+	return nil
+}
+
+// CreateDocument creates a new document with basic fields in the specified collection.
+func CreateDocument(dbName, collectionName string, client *mongo.Client) (interface{}, error) {
+	collection := client.Database(dbName).Collection(collectionName)
+
+	// Create a basic document
+	document := bson.M{
+		"new":    "document",
+		"status": "pending",
+	}
+
+	// Execute the insert operation
+	result, err := collection.InsertOne(context.TODO(), document)
+	if err != nil {
+		return nil, fmt.Errorf("error creating document: %w", err)
+	}
+
+	return result.InsertedID, nil
 }
