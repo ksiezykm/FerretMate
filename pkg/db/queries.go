@@ -159,7 +159,7 @@ func DeleteDocumentByID(dbName, collectionName, documentID string, client *mongo
 }
 
 // CreateDocument creates a new document with basic fields in the specified collection.
-func CreateDocument(dbName, collectionName string, client *mongo.Client) (interface{}, error) {
+func CreateDocument(dbName, collectionName string, client *mongo.Client) (error) {
 	collection := client.Database(dbName).Collection(collectionName)
 
 	// Create a basic document
@@ -169,10 +169,10 @@ func CreateDocument(dbName, collectionName string, client *mongo.Client) (interf
 	}
 
 	// Execute the insert operation
-	result, err := collection.InsertOne(context.TODO(), document)
+	_, err := collection.InsertOne(context.TODO(), document)
 	if err != nil {
-		return nil, fmt.Errorf("error creating document: %w", err)
+		return fmt.Errorf("error creating document: %w", err)
 	}
 
-	return result.InsertedID, nil
+	return nil
 }

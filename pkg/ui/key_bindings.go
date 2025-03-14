@@ -55,5 +55,8 @@ func RegisterKeyBindings(g *gocui.Gui) error {
 	if err := g.SetKeybinding("documents", gocui.KeyCtrlN, gocui.ModNone, createNewDocument); err != nil {
 		return err
 	}
+	if err := g.SetKeybinding("documents", gocui.KeyDelete, gocui.ModNone, deleteDocument); err != nil {
+		return err
+	}
 	return nil
 }

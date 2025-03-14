@@ -6,8 +6,6 @@ import (
 	"log"
 	"strings"
 
-	"fmt"
-
 	"github.com/awesome-gocui/gocui"
 	"github.com/ksiezykm/FerretMate/pkg/db"
 	"github.com/ksiezykm/FerretMate/pkg/model"
@@ -79,8 +77,8 @@ func selectItem(g *gocui.Gui, v *gocui.View) error {
 	_, cy := v.Cursor()
 	lines := strings.Split(v.Buffer(), "\n")
 
-		// model.State.Messages = fmt.Sprint(cy)
-		// updateMessages(g)
+	// model.State.Messages = fmt.Sprint(cy)
+	// updateMessages(g)
 
 	selected := ""
 
@@ -245,13 +243,40 @@ func createNewDocument(g *gocui.Gui, v *gocui.View) error {
 	// }
 
 	// model.State.SelectedCollection = selected
-	insertedId, err := db.CreateDocument(model.State.DBname, model.State.SelectedCollection, model.State.DBclient)
+	err = db.CreateDocument(model.State.DBname, model.State.SelectedCollection, model.State.DBclient)
 	if err != nil {
 		log.Fatalf("Failed to create document: %v", err)
 	}
 
-	model.State.Messages = fmt.Sprint(insertedId)
-	updateMessages(g)
+	// model.State.Messages = fmt.Sprint(insertedId)
+	// updateMessages(g)
+
+	model.State.Documents, err = db.GetDocuments(model.State.DBname, model.State.SelectedCollection, model.State.DBclient)
+	if err != nil {
+		log.Fatalf("Failed to retrieve collection: %v", err)
+	}
+	model.State.DocumentContent = ""
+	updateDocumentDetails(g)
+	updateDocuments(g)
+
+	return nil
+}
+
+func deleteDocument(g *gocui.Gui, v *gocui.View) error {
+	var err error
+	_, cy := v.Cursor()
+	lines := strings.Split(v.Buffer(), "\n")
+
+	selected := ""
+
+	if cy >= 0 && cy < len(lines)-1 {
+		selected = lines[cy]
+	}
+
+	err = db.DeleteDocumentByID(model.State.DBname, model.State.SelectedCollection, selected, model.State.DBclient)
+	if err != nil {
+		log.Fatalf("Failed to create document: %v", err)
+	}
 
 	model.State.Documents, err = db.GetDocuments(model.State.DBname, model.State.SelectedCollection, model.State.DBclient)
 	if err != nil {
