@@ -173,6 +173,19 @@ func nextView(g *gocui.Gui, v *gocui.View) error {
 		nextV.SetCursor(0, 0)
 	}
 
+	documentsInfo := "Tab: next view | Enter: view | Delete: delete | Ctrl+n: new"
+	detailsInfo := "Tab: next view | Enter: edit line"
+
+	switch nextView {
+
+	case "documents":
+		model.State.Messages = documentsInfo
+	case "details":
+		model.State.Messages = detailsInfo
+	default:
+		model.State.Messages = ""
+	}
+	updateMessages(g)
 	return nil
 }
 

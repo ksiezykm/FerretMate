@@ -172,6 +172,7 @@ func Layout(g *gocui.Gui) error {
 		v.Autoscroll = false
 		v.Editable = false
 		v.Wrap = true
+		v.Frame = false
 	}
 
 	return nil
