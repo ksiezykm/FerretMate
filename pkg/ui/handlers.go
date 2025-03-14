@@ -79,8 +79,8 @@ func selectItem(g *gocui.Gui, v *gocui.View) error {
 	_, cy := v.Cursor()
 	lines := strings.Split(v.Buffer(), "\n")
 
-	model.State.Messages = fmt.Sprint(cy)
-	updateMessages(g)
+		// model.State.Messages = fmt.Sprint(cy)
+		// updateMessages(g)
 
 	selected := ""
 
@@ -235,16 +235,16 @@ func saveChangesToEditedDocument(g *gocui.Gui, v *gocui.View) error {
 
 func createNewDocument(g *gocui.Gui, v *gocui.View) error {
 	var err error
-	_, cy := v.Cursor()
-	lines := strings.Split(v.Buffer(), "\n")
+	// _, cy := v.Cursor()
+	// lines := strings.Split(v.Buffer(), "\n")
 
-	selected := ""
+	// selected := ""
 
-	if cy >= 0 && cy < len(lines)-1 {
-		selected = lines[cy]
-	}
+	// if cy >= 0 && cy < len(lines)-1 {
+	// 	selected = lines[cy]
+	// }
 
-	model.State.SelectedCollection = selected
+	// model.State.SelectedCollection = selected
 	insertedId, err := db.CreateDocument(model.State.DBname, model.State.SelectedCollection, model.State.DBclient)
 	if err != nil {
 		log.Fatalf("Failed to create document: %v", err)

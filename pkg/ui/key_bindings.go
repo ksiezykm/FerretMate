@@ -52,7 +52,7 @@ func RegisterKeyBindings(g *gocui.Gui) error {
 	if err := g.SetKeybinding("edit", gocui.KeyEsc, gocui.ModNone, closeEditView); err != nil {
 		return err
 	}
-	if err := g.SetKeybinding("collections", gocui.KeyCtrlN, gocui.ModNone, createNewDocument); err != nil {
+	if err := g.SetKeybinding("documents", gocui.KeyCtrlN, gocui.ModNone, createNewDocument); err != nil {
 		return err
 	}
 	return nil
