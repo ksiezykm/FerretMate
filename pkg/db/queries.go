@@ -159,7 +159,7 @@ func DeleteDocumentByID(dbName, collectionName, documentID string, client *mongo
 }
 
 // CreateDocument creates a new document with basic fields in the specified collection.
-func CreateDocument(dbName, collectionName string, client *mongo.Client) (error) {
+func CreateDocument(dbName, collectionName string, client *mongo.Client) error {
 	collection := client.Database(dbName).Collection(collectionName)
 
 	// Create a basic document
@@ -175,4 +175,32 @@ func CreateDocument(dbName, collectionName string, client *mongo.Client) (error)
 	}
 
 	return nil
+}
+
+func CreateDatabase(client *mongo.Client) error {
+
+	// Select the database and collection
+	database := client.Database("new_database")          // Database name
+	collection := database.Collection("temp_collection") // Collection name
+
+	// Insert a document, which creates the database (if it doesn't exist)
+	//  ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	//  defer cancel()
+	_, err := collection.InsertOne(context.TODO(), map[string]string{"key": "value"})
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Println("Database and collection created (or already existed).")
+
+	// Drop the collection
+	err = collection.Drop(context.TODO())
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Println("Collection dropped.")
+
+	return nil
+
 }

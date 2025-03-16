@@ -58,5 +58,8 @@ func RegisterKeyBindings(g *gocui.Gui) error {
 	if err := g.SetKeybinding("documents", gocui.KeyDelete, gocui.ModNone, deleteDocument); err != nil {
 		return err
 	}
+	if err := g.SetKeybinding("databases", gocui.KeyCtrlN, gocui.ModNone, createNewDatabase); err != nil {
+		return err
+	}
 	return nil
 }

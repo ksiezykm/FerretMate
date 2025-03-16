@@ -288,3 +288,22 @@ func deleteDocument(g *gocui.Gui, v *gocui.View) error {
 
 	return nil
 }
+
+func createNewDatabase(g *gocui.Gui, v *gocui.View) error {
+	var err error
+
+	err = db.CreateDatabase(model.State.DBclient)
+	if err != nil {
+		log.Fatalf("Failed to create database: %v", err)
+	}
+
+	// model.State.Documents, err = db.GetDocuments(model.State.DBname, model.State.SelectedCollection, model.State.DBclient)
+	// if err != nil {
+	// 	log.Fatalf("Failed to retrieve collection: %v", err)
+	// }
+	// model.State.DocumentContent = ""
+	// updateDocumentDetails(g)
+	// updateDocuments(g)
+
+	return nil
+}
