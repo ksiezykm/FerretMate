@@ -76,7 +76,7 @@ func Layout(g *gocui.Gui) error {
 	maxX, maxY := g.Size()
 
 	// Title panel
-	if v, err := g.SetView("title", 0, 0, maxX/4, 2, 0); err != nil {
+	if v, err := g.SetView("title", 0, 0, maxX/5, 2, 0); err != nil {
 		if err != gocui.ErrUnknownView {
 			return err
 		}
@@ -87,12 +87,12 @@ func Layout(g *gocui.Gui) error {
 		fmt.Fprintln(v, "*****FerretMate*****")
 	}
 
-	// Left panel for database
-	if v, err := g.SetView("databases", 0, 3, maxX/4, (maxY-3)/2, 0); err != nil {
+	// Left panel for connections
+	if v, err := g.SetView("connections", 0, 3, maxX/5, maxY/2-1, 0); err != nil {
 		if err != gocui.ErrUnknownView {
 			return err
 		}
-		v.Title = "Databases"
+		v.Title = "Connections (F1)"
 		v.FrameColor = gocui.ColorGreen
 		v.Highlight = true
 		v.Autoscroll = false
@@ -101,13 +101,29 @@ func Layout(g *gocui.Gui) error {
 		for k, _ := range model.State.Config {
 			fmt.Fprintln(v, k)
 		}
-		if _, err := g.SetCurrentView("databases"); err != nil {
+		if _, err := g.SetCurrentView("connections"); err != nil {
 			return err
 		}
 	}
 
+	// Left panel for database
+	if v, err := g.SetView("databases", 0, maxY/2, maxX/5, maxY-3, 0); err != nil {
+		if err != gocui.ErrUnknownView {
+			return err
+		}
+		v.Title = "Databases (F1)"
+		v.FrameColor = gocui.ColorGreen
+		v.Highlight = true
+		v.Autoscroll = false
+		v.Editable = false
+		v.SelFgColor = gocui.ColorGreen
+		for k, _ := range model.State.Config {
+			fmt.Fprintln(v, k)
+		}
+	}
+
 	// Left panel for collections
-	if v, err := g.SetView("collections", 0, 1+(maxY-3)/2, maxX/4, maxY-3, 0); err != nil {
+	if v, err := g.SetView("collections", maxX/5+1, 0, 2*maxX/5, maxY-3, 0); err != nil {
 		if err != gocui.ErrUnknownView {
 			return err
 		}
@@ -125,7 +141,7 @@ func Layout(g *gocui.Gui) error {
 	}
 
 	// Middle panel for documents list
-	if v, err := g.SetView("documents", maxX/4+1, 0, 2*maxX/4, maxY-3, 0); err != nil {
+	if v, err := g.SetView("documents", 2*maxX/5+1, 0, 3*maxX/5-1, maxY-3, 0); err != nil {
 		if err != gocui.ErrUnknownView {
 			return err
 		}
@@ -143,7 +159,7 @@ func Layout(g *gocui.Gui) error {
 	}
 
 	// Right panel for selected document details
-	if v, err := g.SetView("details", 2*maxX/4+1, 0, maxX-1, maxY-3, 0); err != nil {
+	if v, err := g.SetView("details", 3*maxX/5, 0, maxX-1, maxY-3, 0); err != nil {
 		if err != gocui.ErrUnknownView {
 			return err
 		}
