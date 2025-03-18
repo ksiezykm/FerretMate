@@ -12,6 +12,16 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
+// GetDBs retrieves the list of databases from the given connection.
+func GetDBs(client *mongo.Client) ([]string, error) {
+	dbs, err := client.ListDatabaseNames(context.TODO(), bson.D{})//client.Database(dbName).ListCollectionNames(context.TODO(), bson.D{})
+	if err != nil {
+		return nil, fmt.Errorf("failed to list collections: %w", err)
+	}
+	return dbs, nil
+
+}
+
 // GetCollections retrieves the list of collections from the given database.
 func GetCollections(dbName string, client *mongo.Client) ([]string, error) {
 	collections, err := client.Database(dbName).ListCollectionNames(context.TODO(), bson.D{})

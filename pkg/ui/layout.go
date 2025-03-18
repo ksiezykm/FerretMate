@@ -8,6 +8,19 @@ import (
 )
 
 // updateCollections
+func updateDatabases(g *gocui.Gui) error {
+	v, err := g.View("databases")
+	if err != nil {
+		return err
+	}
+	v.Clear()
+	for _, dbname := range model.State.DBnames {
+		fmt.Fprintln(v, dbname)
+	}
+	return nil
+}
+
+// updateCollections
 func updateCollections(g *gocui.Gui) error {
 	v, err := g.View("collections")
 	if err != nil {
@@ -111,15 +124,15 @@ func Layout(g *gocui.Gui) error {
 		if err != gocui.ErrUnknownView {
 			return err
 		}
-		v.Title = "Databases (F1)"
-		v.FrameColor = gocui.ColorGreen
-		v.Highlight = true
+		v.Title = "Databases (F2)"
+		//v.FrameColor = gocui.ColorGreen
+		//v.Highlight = true
 		v.Autoscroll = false
 		v.Editable = false
-		v.SelFgColor = gocui.ColorGreen
-		for k, _ := range model.State.Config {
-			fmt.Fprintln(v, k)
-		}
+		//v.SelFgColor = gocui.ColorGreen
+		// for k, _ := range model.State.Config {
+		// 	fmt.Fprintln(v, k)
+		// }
 	}
 
 	// Left panel for collections

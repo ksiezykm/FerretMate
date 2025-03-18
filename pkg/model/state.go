@@ -6,11 +6,12 @@ import (
 
 type AppState struct {
 	Config             map[string]DatabaseConfig
-	DBname             string
+	DBnames            []string
 	DBclient           *mongo.Client
 	Collections        []string
 	Documents          []string
 	DocumentContent    string
+	SelectedDB         string
 	SelectedCollection string
 	SelectedDocument   string
 	Messages           string

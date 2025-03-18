@@ -91,14 +91,14 @@ func selectItem(g *gocui.Gui, v *gocui.View) error {
 	case "databases":
 		model.State.Collections = nil
 
-		model.State.DBname = model.State.Config[selected].Database
-		model.State.DBclient, err = db.ConnectToDB(model.State.Config[selected])
+		model.State.SelectedDB = model.State.Config[selected].Database
+		model.State.DBclient, err = db.Connect(model.State.Config[selected])
 		if err != nil {
 			log.Fatalf("Failed to connect to DB: %v", err)
 		}
 		//defer model.State.DBclient.Disconnect(context.TODO())
 
-		model.State.Collections, err = db.GetCollections(model.State.DBname, model.State.DBclient)
+		model.State.Collections, err = db.GetCollections(model.State.SelectedDB, model.State.DBclient)
 		if err != nil {
 			log.Fatalf("Failed to retrieve collections: %v", err)
 		}
@@ -109,7 +109,7 @@ func selectItem(g *gocui.Gui, v *gocui.View) error {
 		updateDocuments(g)
 	case "collections":
 		model.State.SelectedCollection = selected
-		model.State.Documents, err = db.GetDocuments(model.State.DBname, model.State.SelectedCollection, model.State.DBclient)
+		model.State.Documents, err = db.GetDocuments(model.State.SelectedDB, model.State.SelectedCollection, model.State.DBclient)
 		if err != nil {
 			log.Fatalf("Failed to retrieve collection: %v", err)
 		}
@@ -118,7 +118,7 @@ func selectItem(g *gocui.Gui, v *gocui.View) error {
 		updateDocuments(g)
 	case "documents":
 		model.State.SelectedDocument = selected
-		documentDromDB, err := db.GetDocumentByID(model.State.DBname, model.State.SelectedCollection, selected, model.State.DBclient)
+		documentDromDB, err := db.GetDocumentByID(model.State.SelectedDB, model.State.SelectedCollection, selected, model.State.DBclient)
 		if err != nil {
 			log.Fatalf("Failed to retrieve Document: %v", err)
 		}
@@ -226,7 +226,7 @@ func saveChangesToEditedDocument(g *gocui.Gui, v *gocui.View) error {
 
 	updateDocumentDetails(g)
 
-	db.UpdateDocumentByID(model.State.DBname, model.State.SelectedCollection, model.State.SelectedDocument, model.State.DocumentContent, model.State.DBclient)
+	db.UpdateDocumentByID(model.State.SelectedDB, model.State.SelectedCollection, model.State.SelectedDocument, model.State.DocumentContent, model.State.DBclient)
 
 	return nil
 }
@@ -243,7 +243,7 @@ func createNewDocument(g *gocui.Gui, v *gocui.View) error {
 	// }
 
 	// model.State.SelectedCollection = selected
-	err = db.CreateDocument(model.State.DBname, model.State.SelectedCollection, model.State.DBclient)
+	err = db.CreateDocument(model.State.SelectedDB, model.State.SelectedCollection, model.State.DBclient)
 	if err != nil {
 		log.Fatalf("Failed to create document: %v", err)
 	}
@@ -251,7 +251,7 @@ func createNewDocument(g *gocui.Gui, v *gocui.View) error {
 	// model.State.Messages = fmt.Sprint(insertedId)
 	// updateMessages(g)
 
-	model.State.Documents, err = db.GetDocuments(model.State.DBname, model.State.SelectedCollection, model.State.DBclient)
+	model.State.Documents, err = db.GetDocuments(model.State.SelectedDB, model.State.SelectedCollection, model.State.DBclient)
 	if err != nil {
 		log.Fatalf("Failed to retrieve collection: %v", err)
 	}
@@ -273,12 +273,12 @@ func deleteDocument(g *gocui.Gui, v *gocui.View) error {
 		selected = lines[cy]
 	}
 
-	err = db.DeleteDocumentByID(model.State.DBname, model.State.SelectedCollection, selected, model.State.DBclient)
+	err = db.DeleteDocumentByID(model.State.SelectedDB, model.State.SelectedCollection, selected, model.State.DBclient)
 	if err != nil {
 		log.Fatalf("Failed to create document: %v", err)
 	}
 
-	model.State.Documents, err = db.GetDocuments(model.State.DBname, model.State.SelectedCollection, model.State.DBclient)
+	model.State.Documents, err = db.GetDocuments(model.State.SelectedDB, model.State.SelectedCollection, model.State.DBclient)
 	if err != nil {
 		log.Fatalf("Failed to retrieve collection: %v", err)
 	}

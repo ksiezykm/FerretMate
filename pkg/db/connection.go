@@ -9,7 +9,7 @@ import (
 )
 
 // connectToDB connects to FerretDB using DatabaseConfig fields
-func ConnectToDB(dbConfig model.DatabaseConfig) (*mongo.Client, error) {
+func Connect(dbConfig model.DatabaseConfig) (*mongo.Client, error) {
 
 	uri := "mongodb://" + dbConfig.Username + ":" + dbConfig.Password + "@" + dbConfig.Host + "/" //+ dbConfig.Database
 
