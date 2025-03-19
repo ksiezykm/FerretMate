@@ -17,7 +17,7 @@ func main() {
 		log.Fatalf("Failed to read config: %v", err)
 	}
 
-	model.State.Config = configMap
+	model.State.Connections = configMap
 
 	// // Connect to DB and get collections
 	// model.State.DBclient, err = db.ConnectToDB(configMap["produkcja"])
@@ -47,8 +47,8 @@ func main() {
 		log.Fatalf("Failed to register keybindings: %v", err)
 	}
 
-	// Start the main loop
-	if err := g.MainLoop(); err != nil && err != gocui.ErrQuit {
-		log.Fatal(err)
+		// Start the main loop
+		if err := g.MainLoop(); err != nil && err != gocui.ErrQuit {
+			log.Fatal(err)
+		}
 	}
-}

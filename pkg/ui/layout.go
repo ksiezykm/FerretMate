@@ -111,7 +111,7 @@ func Layout(g *gocui.Gui) error {
 		v.Autoscroll = false
 		v.Editable = false
 		v.SelFgColor = gocui.ColorGreen
-		for k, _ := range model.State.Config {
+		for k, _ := range model.State.Connections {
 			fmt.Fprintln(v, k)
 		}
 		if _, err := g.SetCurrentView("connections"); err != nil {

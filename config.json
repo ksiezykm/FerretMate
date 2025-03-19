@@ -4,5 +4,11 @@
       "username": "usr_ps2",
       "password": "pass_ps2",
       "database": "testdb"
+    },
+    "ferret1": {
+      "host": "localhost:37021",
+      "username": "usr_ps2",
+      "password": "pass_ps2",
+      "database": "testdb"
     }
   }

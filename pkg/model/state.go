@@ -5,7 +5,7 @@ import (
 )
 
 type AppState struct {
-	Config             map[string]DatabaseConfig
+	Connections             map[string]DatabaseConfig
 	DBnames            []string
 	DBclient           *mongo.Client
 	Collections        []string

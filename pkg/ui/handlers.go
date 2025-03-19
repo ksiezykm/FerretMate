@@ -31,6 +31,7 @@ func cursorUp(g *gocui.Gui, v *gocui.View) error {
 
 // CursorDown moves the cursor down in the given view
 func cursorDown(g *gocui.Gui, v *gocui.View) error {
+
 	if v == nil {
 		return nil
 	}
@@ -41,8 +42,10 @@ func cursorDown(g *gocui.Gui, v *gocui.View) error {
 	_, vSize := v.Size()
 
 	switch currentView {
+	case "connections":
+		max = len(model.State.Connections) - 1
 	case "databases":
-		max = len(model.State.Config) - 1
+		max = len(model.State.Connections) - 1
 	case "collections":
 		max = len(model.State.Collections) - 1
 	case "documents":
@@ -91,8 +94,8 @@ func selectItem(g *gocui.Gui, v *gocui.View) error {
 	case "databases":
 		model.State.Collections = nil
 
-		model.State.SelectedDB = model.State.Config[selected].Database
-		model.State.DBclient, err = db.Connect(model.State.Config[selected])
+		model.State.SelectedDB = model.State.Connections[selected].Database
+		model.State.DBclient, err = db.Connect(model.State.Connections[selected])
 		if err != nil {
 			log.Fatalf("Failed to connect to DB: %v", err)
 		}
