@@ -9,10 +9,8 @@ import (
 	"github.com/ksiezykm/FerretMate/pkg/model"
 )
 
-var conView string = "connections"
-
 func RegisterKeyBindingsConnections(g *gocui.Gui) error {
-	if err := g.SetKeybinding(conView, gocui.KeyEnter, gocui.ModNone, selectConnection); err != nil {
+	if err := g.SetKeybinding("connections", gocui.KeyEnter, gocui.ModNone, selectConnection); err != nil {
 		return err
 	}
 	if err := g.SetKeybinding("", gocui.KeyCtrlY, gocui.ModNone, setCurrentViewConnections); err != nil {
@@ -23,6 +21,7 @@ func RegisterKeyBindingsConnections(g *gocui.Gui) error {
 func setCurrentViewConnections(g *gocui.Gui, v *gocui.View) error {
 
 	v.FrameColor = gocui.ColorDefault
+	v.SelFgColor = gocui.ColorDefault
 	var nextView *gocui.View
 	var err error
 	if nextView, err = g.SetCurrentView("connections"); err != nil {
@@ -30,6 +29,7 @@ func setCurrentViewConnections(g *gocui.Gui, v *gocui.View) error {
 	}
 	nextView.Highlight = true
 	nextView.FrameColor = gocui.ColorGreen
+	nextView.SelFgColor = gocui.ColorGreen
 	// nextView.SetCursor(0, 0)
 	// // nextView.SetOrigin(0, 0)
 	return nil
@@ -46,7 +46,9 @@ func selectConnection(g *gocui.Gui, v *gocui.View) error {
 		selected = lines[cy]
 	}
 
-	model.State.DBclient, err = db.Connect(model.State.Connections[selected])
+	model.State.SelectedConnection = model.State.Connections[selected]
+
+	model.State.DBclient, err = db.Connect(model.State.SelectedConnection)
 	if err != nil {
 		log.Fatalf("Failed to connect to DB: %v", err)
 	}

@@ -27,3 +27,23 @@ func Connect(dbConfig model.DatabaseConfig) (*mongo.Client, error) {
 
 	return client, nil
 }
+
+// connectToDB connects to FerretDB using DatabaseConfig fields
+func Connect2(dbConfig model.DatabaseConfig, dbName string) (*mongo.Client, error) {
+
+	uri := "mongodb://" + dbConfig.Username + ":" + dbConfig.Password + "@" + dbConfig.Host + "/" + dbName
+
+	//fmt.Println(uri)
+	clientOptions := options.Client().ApplyURI(uri)
+	client, err := mongo.Connect(context.TODO(), clientOptions)
+	if err != nil {
+		return nil, err
+	}
+
+	// Verify connection
+	if err := client.Ping(context.TODO(), nil); err != nil {
+		return nil, err
+	}
+
+	return client, nil
+}

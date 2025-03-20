@@ -105,7 +105,7 @@ func Layout(g *gocui.Gui) error {
 		if err != gocui.ErrUnknownView {
 			return err
 		}
-		v.Title = "Connections (F1)"
+		v.Title = " Connections (F1) "
 		v.FrameColor = gocui.ColorGreen
 		v.Highlight = true
 		v.Autoscroll = false
@@ -124,7 +124,7 @@ func Layout(g *gocui.Gui) error {
 		if err != gocui.ErrUnknownView {
 			return err
 		}
-		v.Title = "Databases (F2)"
+		v.Title = " Databases (F2) "
 		//v.FrameColor = gocui.ColorGreen
 		//v.Highlight = true
 		v.Autoscroll = false
