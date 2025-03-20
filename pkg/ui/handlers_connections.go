@@ -15,15 +15,12 @@ func RegisterKeyBindingsConnections(g *gocui.Gui) error {
 	if err := g.SetKeybinding(conView, gocui.KeyEnter, gocui.ModNone, selectConnection); err != nil {
 		return err
 	}
-	if err := g.SetKeybinding("", gocui.KeyCtrlY, gocui.ModNone, activateConnections); err != nil {
-		return err
-	}
-	if err := g.SetKeybinding("", gocui.KeyCtrlU, gocui.ModNone, activateDatabases); err != nil {
+	if err := g.SetKeybinding("", gocui.KeyCtrlY, gocui.ModNone, setCurrentViewConnections); err != nil {
 		return err
 	}
 	return nil
 }
-func activateConnections(g *gocui.Gui, v *gocui.View) error {
+func setCurrentViewConnections(g *gocui.Gui, v *gocui.View) error {
 
 	v.FrameColor = gocui.ColorDefault
 	var nextView *gocui.View
@@ -35,23 +32,6 @@ func activateConnections(g *gocui.Gui, v *gocui.View) error {
 	nextView.FrameColor = gocui.ColorGreen
 	// nextView.SetCursor(0, 0)
 	// // nextView.SetOrigin(0, 0)
-	return nil
-
-}
-func activateDatabases(g *gocui.Gui, v *gocui.View) error {
-
-	v.FrameColor = gocui.ColorDefault
-	v.SelFgColor = gocui.ColorDefault
-	var nextView *gocui.View
-	var err error
-	if nextView, err = g.SetCurrentView("databases"); err != nil {
-		return err
-	}
-	nextView.Highlight = true
-	nextView.FrameColor = gocui.ColorGreen
-	nextView.SelFgColor = gocui.ColorGreen
-	// nextView.SetOrigin(0, 0)
-	// nextView.SetCursor(0, 0)
 	return nil
 }
 

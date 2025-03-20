@@ -8,6 +8,7 @@ func RegisterKeyBindings(g *gocui.Gui) error {
 		return err
 	}
 	RegisterKeyBindingsConnections(g)
+	RegisterKeyBindingsDatabases(g)
 	if err := g.SetKeybinding("connections", gocui.KeyArrowDown, gocui.ModNone, cursorDown); err != nil {
 		return err
 	}
