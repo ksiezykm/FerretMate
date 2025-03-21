@@ -46,8 +46,8 @@ func updateDocuments(g *gocui.Gui) error {
 	return nil
 }
 
-// updateDocument Details
-func updateDocumentDetails(g *gocui.Gui) error {
+// updateDocument Content
+func updateDocumentContent(g *gocui.Gui) error {
 	v, err := g.View("details")
 	if err != nil {
 		return err

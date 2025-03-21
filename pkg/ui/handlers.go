@@ -107,7 +107,7 @@ func selectItem(g *gocui.Gui, v *gocui.View) error {
 		}
 		updateCollections(g)
 		model.State.DocumentContent = ""
-		updateDocumentDetails(g)
+		updateDocumentContent(g)
 		model.State.Documents = nil
 		updateDocuments(g)
 	case "collections":
@@ -117,7 +117,7 @@ func selectItem(g *gocui.Gui, v *gocui.View) error {
 			log.Fatalf("Failed to retrieve collection: %v", err)
 		}
 		model.State.DocumentContent = ""
-		updateDocumentDetails(g)
+		updateDocumentContent(g)
 		updateDocuments(g)
 	case "documents":
 		model.State.SelectedDocument = selected
@@ -131,7 +131,7 @@ func selectItem(g *gocui.Gui, v *gocui.View) error {
 			return nil
 		}
 		model.State.DocumentContent = string(jsonDoc)
-		updateDocumentDetails(g)
+		updateDocumentContent(g)
 	}
 
 	return nil
@@ -227,7 +227,7 @@ func saveChangesToEditedDocument(g *gocui.Gui, v *gocui.View) error {
 
 	model.State.DocumentContent = strings.Join(lines, "\n")
 
-	updateDocumentDetails(g)
+	updateDocumentContent(g)
 
 	db.UpdateDocumentByID(model.State.SelectedDB, model.State.SelectedCollection, model.State.SelectedDocument, model.State.DocumentContent, model.State.DBclient)
 
@@ -259,7 +259,7 @@ func createNewDocument(g *gocui.Gui, v *gocui.View) error {
 		log.Fatalf("Failed to retrieve collection: %v", err)
 	}
 	model.State.DocumentContent = ""
-	updateDocumentDetails(g)
+	updateDocumentContent(g)
 	updateDocuments(g)
 
 	return nil
@@ -286,7 +286,7 @@ func deleteDocument(g *gocui.Gui, v *gocui.View) error {
 		log.Fatalf("Failed to retrieve collection: %v", err)
 	}
 	model.State.DocumentContent = ""
-	updateDocumentDetails(g)
+	updateDocumentContent(g)
 	updateDocuments(g)
 
 	return nil

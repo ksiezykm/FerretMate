@@ -4,8 +4,6 @@ import (
 	"log"
 	"strings"
 
-	"fmt"
-
 	"github.com/awesome-gocui/gocui"
 	"github.com/ksiezykm/FerretMate/pkg/db"
 	"github.com/ksiezykm/FerretMate/pkg/model"
@@ -50,9 +48,6 @@ func selectDatabase(g *gocui.Gui, v *gocui.View) error {
 	var err error
 	model.State.Collections = nil
 
-	model.State.Messages = fmt.Sprint(cy)
-	updateMessages(g)
-
 	model.State.SelectedDB = selected
 	model.State.DBclient, err = db.Connect2(model.State.SelectedConnection, model.State.SelectedDB)
 	if err != nil {
@@ -66,7 +61,7 @@ func selectDatabase(g *gocui.Gui, v *gocui.View) error {
 	}
 	updateCollections(g)
 	model.State.DocumentContent = ""
-	updateDocumentDetails(g)
+	updateDocumentContent(g)
 	model.State.Documents = nil
 	updateDocuments(g)
 
