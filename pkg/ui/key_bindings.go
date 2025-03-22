@@ -11,6 +11,7 @@ func RegisterKeyBindings(g *gocui.Gui) error {
 	RegisterKeyBindingsConnections(g)
 	RegisterKeyBindingsDatabases(g)
 	RegisterKeyBindingsCollections(g)
+	RegisterKeyBindingsDocuments(g)
 
 	if err := g.SetKeybinding("connections", gocui.KeyArrowDown, gocui.ModNone, cursorDown); err != nil {
 		return err
