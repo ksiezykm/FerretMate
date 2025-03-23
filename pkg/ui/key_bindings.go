@@ -25,7 +25,7 @@ func RegisterKeyBindings(g *gocui.Gui) error {
 	if err := g.SetKeybinding("documents", gocui.KeyArrowDown, gocui.ModNone, cursorDown); err != nil {
 		return err
 	}
-	if err := g.SetKeybinding("details", gocui.KeyArrowDown, gocui.ModNone, cursorDown); err != nil {
+	if err := g.SetKeybinding("content", gocui.KeyArrowDown, gocui.ModNone, cursorDown); err != nil {
 		return err
 	}
 	if err := g.SetKeybinding("", gocui.KeyCtrlC, gocui.ModNone, quit); err != nil {
@@ -43,10 +43,10 @@ func RegisterKeyBindings(g *gocui.Gui) error {
 	// if err := g.SetKeybinding("documents", gocui.KeyTab, gocui.ModNone, nextView); err != nil {
 	// 	return err
 	// }
-	// if err := g.SetKeybinding("details", gocui.KeyTab, gocui.ModNone, nextView); err != nil {
+	// if err := g.SetKeybinding("content", gocui.KeyTab, gocui.ModNone, nextView); err != nil {
 	// 	return err
 	// }
-	if err := g.SetKeybinding("details", gocui.KeyEnter, gocui.ModNone, getLine); err != nil {
+	if err := g.SetKeybinding("content", gocui.KeyEnter, gocui.ModNone, getLine); err != nil {
 		return err
 	}
 	if err := g.SetKeybinding("edit", gocui.KeyArrowRight, gocui.ModNone, editCursorRight); err != nil {

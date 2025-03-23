@@ -118,7 +118,7 @@ func closeEditView(g *gocui.Gui, v *gocui.View) error {
 	if err := g.DeleteView("messages"); err != nil {
 		return err
 	}
-	if _, err := g.SetCurrentView("details"); err != nil {
+	if _, err := g.SetCurrentView("content"); err != nil {
 		return err
 	}
 	return nil

@@ -48,7 +48,7 @@ func updateDocuments(g *gocui.Gui) error {
 
 // updateDocument Content
 func updateDocumentContent(g *gocui.Gui) error {
-	v, err := g.View("details")
+	v, err := g.View("content")
 	if err != nil {
 		return err
 	}
@@ -171,8 +171,8 @@ func Layout(g *gocui.Gui) error {
 		// }
 	}
 
-	// Right panel for selected document details
-	if v, err := g.SetView("details", 3*maxX/5, 0, maxX-1, maxY-3, 0); err != nil {
+	// Right panel for selected document content
+	if v, err := g.SetView("content", 3*maxX/5, 0, maxX-1, maxY-3, 0); err != nil {
 		if err != gocui.ErrUnknownView {
 			return err
 		}
@@ -187,7 +187,7 @@ func Layout(g *gocui.Gui) error {
 		//      docJSON, _ := json.MarshalIndent(selectedDocument, "", "  ")
 		//      fmt.Fprintln(v, string(docJSON))
 		// } else {
-		//      fmt.Fprintln(v, "Select a document to view details.")
+		//      fmt.Fprintln(v, "Select a document to view content.")
 		// }
 	}
 

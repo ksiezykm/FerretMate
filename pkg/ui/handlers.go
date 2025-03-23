@@ -50,7 +50,7 @@ func cursorDown(g *gocui.Gui, v *gocui.View) error {
 		max = len(model.State.Collections) - 1
 	case "documents":
 		max = len(model.State.Documents) - 1
-	case "details":
+	case "content":
 		lines := strings.Split(model.State.DocumentContent, "\n")
 		max = len(lines) - 1
 	}
@@ -147,8 +147,8 @@ func nextView(g *gocui.Gui, v *gocui.View) error {
 	case "collections":
 		nextView = "documents"
 	case "documents":
-		nextView = "details"
-	case "details":
+		nextView = "content"
+	case "content":
 		nextView = "databases"
 	}
 
@@ -175,14 +175,14 @@ func nextView(g *gocui.Gui, v *gocui.View) error {
 	}
 
 	documentsInfo := "Tab: next view | Enter: view | Delete: delete | Ctrl+n: new"
-	detailsInfo := "Tab: next view | Enter: edit line"
+	contentInfo := "Tab: next view | Enter: edit line"
 
 	switch nextView {
 
 	case "documents":
 		model.State.Messages = documentsInfo
-	case "details":
-		model.State.Messages = detailsInfo
+	case "content":
+		model.State.Messages = contentInfo
 	default:
 		model.State.Messages = ""
 	}
