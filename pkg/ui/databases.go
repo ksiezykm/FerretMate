@@ -16,6 +16,9 @@ func RegisterKeyBindingsDatabases(g *gocui.Gui) error {
 	if err := g.SetKeybinding("", gocui.KeyCtrlU, gocui.ModNone, setCurrentViewDatabases); err != nil {
 		return err
 	}
+	if err := g.SetKeybinding("", gocui.KeyF2, gocui.ModNone, setCurrentViewDatabases); err != nil {
+		return err
+	}
 	return nil
 }
 

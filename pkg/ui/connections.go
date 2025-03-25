@@ -16,6 +16,9 @@ func RegisterKeyBindingsConnections(g *gocui.Gui) error {
 	if err := g.SetKeybinding("", gocui.KeyCtrlY, gocui.ModNone, setCurrentViewConnections); err != nil {
 		return err
 	}
+	if err := g.SetKeybinding("", gocui.KeyF1, gocui.ModNone, setCurrentViewConnections); err != nil {
+		return err
+	}
 	return nil
 }
 func setCurrentViewConnections(g *gocui.Gui, v *gocui.View) error {

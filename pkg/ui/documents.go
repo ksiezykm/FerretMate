@@ -17,6 +17,9 @@ func RegisterKeyBindingsDocuments(g *gocui.Gui) error {
 	if err := g.SetKeybinding("", gocui.KeyCtrlO, gocui.ModNone, setCurrentViewDocuments); err != nil {
 		return err
 	}
+	if err := g.SetKeybinding("", gocui.KeyF4, gocui.ModNone, setCurrentViewDocuments); err != nil {
+		return err
+	}
 	return nil
 }
 
