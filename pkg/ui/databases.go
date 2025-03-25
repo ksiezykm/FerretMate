@@ -19,6 +19,9 @@ func RegisterKeyBindingsDatabases(g *gocui.Gui) error {
 	if err := g.SetKeybinding("", gocui.KeyF2, gocui.ModNone, setCurrentViewDatabases); err != nil {
 		return err
 	}
+	if err := g.SetKeybinding("databases", gocui.KeyCtrlN, gocui.ModNone, createNewDatabase); err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -67,6 +70,25 @@ func selectDatabase(g *gocui.Gui, v *gocui.View) error {
 	updateDocumentContent(g)
 	model.State.Documents = nil
 	updateDocuments(g)
+
+	return nil
+}
+
+func createNewDatabase(g *gocui.Gui, v *gocui.View) error {
+	var err error
+
+	err = db.CreateDatabase(model.State.DBclient)
+	if err != nil {
+		log.Fatalf("Failed to create database: %v", err)
+	}
+
+	// model.State.Documents, err = db.GetDocuments(model.State.DBname, model.State.SelectedCollection, model.State.DBclient)
+	// if err != nil {
+	// 	log.Fatalf("Failed to retrieve collection: %v", err)
+	// }
+	// model.State.DocumentContent = ""
+	// updateDocumentDetails(g)
+	// updateDocuments(g)
 
 	return nil
 }

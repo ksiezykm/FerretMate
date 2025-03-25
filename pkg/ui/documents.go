@@ -20,6 +20,12 @@ func RegisterKeyBindingsDocuments(g *gocui.Gui) error {
 	if err := g.SetKeybinding("", gocui.KeyF4, gocui.ModNone, setCurrentViewDocuments); err != nil {
 		return err
 	}
+	if err := g.SetKeybinding("documents", gocui.KeyCtrlN, gocui.ModNone, createNewDocument); err != nil {
+		return err
+	}
+	if err := g.SetKeybinding("documents", gocui.KeyDelete, gocui.ModNone, deleteDocument); err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -63,5 +69,51 @@ func selectDocument(g *gocui.Gui, v *gocui.View) error {
 	}
 	model.State.DocumentContent = string(jsonDoc)
 	updateDocumentContent(g)
+	return nil
+}
+
+func createNewDocument(g *gocui.Gui, v *gocui.View) error {
+	var err error
+
+	err = db.CreateDocument(model.State.SelectedDB, model.State.SelectedCollection, model.State.DBclient)
+	if err != nil {
+		log.Fatalf("Failed to create document: %v", err)
+	}
+
+	model.State.Documents, err = db.GetDocuments(model.State.SelectedDB, model.State.SelectedCollection, model.State.DBclient)
+	if err != nil {
+		log.Fatalf("Failed to retrieve collection: %v", err)
+	}
+	model.State.DocumentContent = ""
+	updateDocumentContent(g)
+	updateDocuments(g)
+
+	return nil
+}
+
+func deleteDocument(g *gocui.Gui, v *gocui.View) error {
+	var err error
+	_, cy := v.Cursor()
+	lines := strings.Split(v.Buffer(), "\n")
+
+	selected := ""
+
+	if cy >= 0 && cy < len(lines)-1 {
+		selected = lines[cy]
+	}
+
+	err = db.DeleteDocumentByID(model.State.SelectedDB, model.State.SelectedCollection, selected, model.State.DBclient)
+	if err != nil {
+		log.Fatalf("Failed to create document: %v", err)
+	}
+
+	model.State.Documents, err = db.GetDocuments(model.State.SelectedDB, model.State.SelectedCollection, model.State.DBclient)
+	if err != nil {
+		log.Fatalf("Failed to retrieve collection: %v", err)
+	}
+	model.State.DocumentContent = ""
+	updateDocumentContent(g)
+	updateDocuments(g)
+
 	return nil
 }
