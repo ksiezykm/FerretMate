@@ -190,49 +190,49 @@ func nextView(g *gocui.Gui, v *gocui.View) error {
 	return nil
 }
 
-func getLine(g *gocui.Gui, v *gocui.View) error {
-	var l string
-	var err error
+// func getLine(g *gocui.Gui, v *gocui.View) error {
+// 	var l string
+// 	var err error
 
-	_, cy := v.Cursor()
-	if l, err = v.Line(cy); err != nil {
-		l = ""
-	}
+// 	_, cy := v.Cursor()
+// 	if l, err = v.Line(cy); err != nil {
+// 		l = ""
+// 	}
 
-	if !strings.Contains(l, "_id") {
+// 	if !strings.Contains(l, "_id") {
 
-		lineToEditNumber = cy
-		lineToEdit = l
+// 		lineToEditNumber = cy
+// 		lineToEdit = l
 
-		if err := editView(g); err != nil {
-			return err
-		}
-	}
-	return nil
-}
+// 		if err := editView(g); err != nil {
+// 			return err
+// 		}
+// 	}
+// 	return nil
+// }
 
-func saveChangesToEditedDocument(g *gocui.Gui, v *gocui.View) error {
-	var line string
-	var err error
+// func saveChangesToEditedDocument(g *gocui.Gui, v *gocui.View) error {
+// 	var line string
+// 	var err error
 
-	_, cy := v.Cursor()
-	if line, err = v.Line(cy); err != nil {
-		line = ""
-	}
+// 	_, cy := v.Cursor()
+// 	if line, err = v.Line(cy); err != nil {
+// 		line = ""
+// 	}
 
-	line = strings.ReplaceAll(line, "█", "")
-	lines := strings.Split(model.State.DocumentContent, "\n")
+// 	line = strings.ReplaceAll(line, "█", "")
+// 	lines := strings.Split(model.State.DocumentContent, "\n")
 
-	lines[lineToEditNumber] = line
+// 	lines[lineToEditNumber] = line
 
-	model.State.DocumentContent = strings.Join(lines, "\n")
+// 	model.State.DocumentContent = strings.Join(lines, "\n")
 
-	updateDocumentContent(g)
+// 	updateDocumentContent(g)
 
-	db.UpdateDocumentByID(model.State.SelectedDB, model.State.SelectedCollection, model.State.SelectedDocument, model.State.DocumentContent, model.State.DBclient)
+// 	db.UpdateDocumentByID(model.State.SelectedDB, model.State.SelectedCollection, model.State.SelectedDocument, model.State.DocumentContent, model.State.DBclient)
 
-	return nil
-}
+// 	return nil
+// }
 
 func createNewDocument(g *gocui.Gui, v *gocui.View) error {
 	var err error

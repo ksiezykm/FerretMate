@@ -6,10 +6,28 @@ import (
 	"strings"
 
 	"github.com/awesome-gocui/gocui"
+	"github.com/ksiezykm/FerretMate/pkg/db"
+	"github.com/ksiezykm/FerretMate/pkg/model"
 )
 
 var lineToEdit string
 var lineToEditNumber int
+
+func RegisterKeyBindingsEdit(g *gocui.Gui) error {
+	if err := g.SetKeybinding("edit", gocui.KeyCtrlS, gocui.ModNone, saveChangesToEditedDocument); err != nil {
+		return err
+	}
+	if err := g.SetKeybinding("edit", gocui.KeyArrowRight, gocui.ModNone, editCursorRight); err != nil {
+		return err
+	}
+	if err := g.SetKeybinding("edit", gocui.KeyArrowLeft, gocui.ModNone, editCursorLeft); err != nil {
+		return err
+	}
+	if err := g.SetKeybinding("edit", gocui.KeyEsc, gocui.ModNone, closeEditView); err != nil {
+		return err
+	}
+	return nil
+}
 
 func editView(g *gocui.Gui) error {
 	maxX, maxY := g.Size()
@@ -17,7 +35,7 @@ func editView(g *gocui.Gui) error {
 		if !errors.Is(err, gocui.ErrUnknownView) {
 			return err
 		}
-		v.Title = "Editor"
+		v.Title = " Editor "
 		v.Editable = true
 		v.SelBgColor = gocui.ColorGreen
 		v.Editor = gocui.DefaultEditor
@@ -42,6 +60,29 @@ func editView(g *gocui.Gui) error {
 		v.Title = "Keyboard shortcuts"
 		fmt.Fprintln(v, "Ctrl+S: Save | Esc: Cancel")
 	}
+	return nil
+}
+
+func saveChangesToEditedDocument(g *gocui.Gui, v *gocui.View) error {
+	var line string
+	var err error
+
+	_, cy := v.Cursor()
+	if line, err = v.Line(cy); err != nil {
+		line = ""
+	}
+
+	line = strings.ReplaceAll(line, "█", "")
+	lines := strings.Split(model.State.DocumentContent, "\n")
+
+	lines[lineToEditNumber] = line
+
+	model.State.DocumentContent = strings.Join(lines, "\n")
+
+	updateDocumentContent(g)
+
+	db.UpdateDocumentByID(model.State.SelectedDB, model.State.SelectedCollection, model.State.SelectedDocument, model.State.DocumentContent, model.State.DBclient)
+
 	return nil
 }
 

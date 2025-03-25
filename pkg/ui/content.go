@@ -16,6 +16,9 @@ func RegisterKeyBindingsContent(g *gocui.Gui) error {
 	if err := g.SetKeybinding("", gocui.KeyF5, gocui.ModNone, setCurrentViewContent); err != nil {
 		return err
 	}
+	if err := g.SetKeybinding("content", gocui.KeyEnter, gocui.ModNone, getLine); err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -36,7 +39,7 @@ func setCurrentViewContent(g *gocui.Gui, v *gocui.View) error {
 	return nil
 }
 
-func selectContent(g *gocui.Gui, v *gocui.View) error {
+func getLine(g *gocui.Gui, v *gocui.View) error {
 	var l string
 	var err error
 
@@ -56,3 +59,24 @@ func selectContent(g *gocui.Gui, v *gocui.View) error {
 	}
 	return nil
 }
+
+// func selectContent(g *gocui.Gui, v *gocui.View) error {
+// 	var l string
+// 	var err error
+
+// 	_, cy := v.Cursor()
+// 	if l, err = v.Line(cy); err != nil {
+// 		l = ""
+// 	}
+
+// 	if !strings.Contains(l, "_id") {
+
+// 		lineToEditNumber = cy
+// 		lineToEdit = l
+
+// 		if err := editView(g); err != nil {
+// 			return err
+// 		}
+// 	}
+// 	return nil
+// }
