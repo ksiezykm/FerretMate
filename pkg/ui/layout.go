@@ -140,7 +140,7 @@ func Layout(g *gocui.Gui) error {
 		if err != gocui.ErrUnknownView {
 			return err
 		}
-		v.Title = "Collections"
+		v.Title = " Collections (F3) "
 		v.Highlight = false
 		v.Autoscroll = false
 		v.Editable = false
@@ -158,7 +158,7 @@ func Layout(g *gocui.Gui) error {
 		if err != gocui.ErrUnknownView {
 			return err
 		}
-		v.Title = "Documents"
+		v.Title = " Documents (F4) "
 		v.Highlight = false
 		v.SelFgColor = gocui.ColorGreen
 		v.Autoscroll = false
@@ -176,7 +176,7 @@ func Layout(g *gocui.Gui) error {
 		if err != gocui.ErrUnknownView {
 			return err
 		}
-		v.Title = "Document Details"
+		v.Title = " Document Content (F5) "
 		v.Highlight = false
 		v.SelFgColor = gocui.ColorGreen
 		v.Autoscroll = false

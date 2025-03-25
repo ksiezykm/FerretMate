@@ -66,6 +66,8 @@ func selectConnection(g *gocui.Gui, v *gocui.View) error {
 	updateCollections(g)
 	model.State.Documents = nil
 	updateDocuments(g)
+	model.State.DocumentContent = ""
+	updateDocumentContent(g)
 
 	return nil
 }
