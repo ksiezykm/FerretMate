@@ -4,6 +4,7 @@ import (
 	"strings"
 
 	"github.com/awesome-gocui/gocui"
+	"github.com/ksiezykm/FerretMate/pkg/model"
 )
 
 func RegisterKeyBindingsContent(g *gocui.Gui) error {
@@ -36,6 +37,10 @@ func setCurrentViewContent(g *gocui.Gui, v *gocui.View) error {
 	nextView.SelFgColor = gocui.ColorGreen
 	// nextView.SetOrigin(0, 0)
 	// nextView.SetCursor(0, 0)
+
+	model.State.Messages = "Enter: edit"
+	updateMessages(g)
+
 	return nil
 }
 

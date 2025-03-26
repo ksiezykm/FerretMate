@@ -35,6 +35,10 @@ func setCurrentViewConnections(g *gocui.Gui, v *gocui.View) error {
 	nextView.SelFgColor = gocui.ColorGreen
 	// nextView.SetCursor(0, 0)
 	// // nextView.SetOrigin(0, 0)
+
+	model.State.Messages = "Enter: connect"
+	updateMessages(g)
+
 	return nil
 }
 

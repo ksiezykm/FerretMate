@@ -43,6 +43,10 @@ func setCurrentViewDocuments(g *gocui.Gui, v *gocui.View) error {
 	nextView.SelFgColor = gocui.ColorGreen
 	// nextView.SetOrigin(0, 0)
 	// nextView.SetCursor(0, 0)
+
+	model.State.Messages = "Enter: view | Delete: delete | Ctrl+n: new"
+	updateMessages(g)
+
 	return nil
 }
 

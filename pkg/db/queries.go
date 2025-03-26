@@ -28,6 +28,7 @@ func GetCollections(dbName string, client *mongo.Client) ([]string, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to list collections: %w", err)
 	}
+	
 	return collections, nil
 
 }
