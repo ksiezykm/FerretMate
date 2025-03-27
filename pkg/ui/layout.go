@@ -200,7 +200,6 @@ func Layout(g *gocui.Gui) error {
 		v.Title = "Messages"
 		v.Autoscroll = false
 		v.Editable = false
-		v.Wrap = true
 		v.Frame = false
 	}
 

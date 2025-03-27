@@ -36,13 +36,13 @@ func cursorDown(g *gocui.Gui, v *gocui.View) error {
 	currentView := v.Name()
 	max := 0
 
-	_, vSize := v.Size()
+	xSize, ySize := v.Size()
 
 	switch currentView {
 	case "connections":
 		max = len(model.State.Connections) - 1
 	case "databases":
-		max = len(model.State.Connections) - 1
+		max = len(model.State.DBnames) - 1
 	case "collections":
 		max = len(model.State.Collections) - 1
 	case "documents":
@@ -55,12 +55,25 @@ func cursorDown(g *gocui.Gui, v *gocui.View) error {
 	cx, cy := v.Cursor()
 	_, vOrigin := v.Origin()
 
+	lines := strings.Split(v.Buffer(), "\n")
+
+	selected := ""
+
+	if cy >= 0 && cy < len(lines)-1 {
+		selected = lines[cy]
+	}
+
+	step := int(len(selected)/xSize) + 1
+
+	model.State.Messages = selected
+	updateMessages(g)
+
 	if cy < max {
-		if cy >= vSize-1 {
-			v.SetOrigin(0, vOrigin+1)
-			return v.SetCursor(cx, vSize-1)
+		if cy >= ySize-1 {
+			v.SetOrigin(0, vOrigin+step)
+			return v.SetCursor(cx, ySize-step)
 		}
-		return v.SetCursor(cx, cy+1)
+		return v.SetCursor(cx, cy+step)
 	}
 
 	g.Update(func(g *gocui.Gui) error { return nil })
