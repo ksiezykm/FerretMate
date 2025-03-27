@@ -52,6 +52,11 @@ func selectCollection(g *gocui.Gui, v *gocui.View) error {
 	if cy >= 0 && cy < len(lines)-1 {
 		selected = lines[cy]
 	}
+
+	if selected == "" {
+		return nil
+	}
+	
 	var err error
 
 	model.State.SelectedCollection = selected

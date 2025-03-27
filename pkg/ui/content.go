@@ -53,6 +53,10 @@ func getLine(g *gocui.Gui, v *gocui.View) error {
 		l = ""
 	}
 
+	if l == "" {
+		return nil
+	}
+
 	if !strings.Contains(l, "_id") {
 
 		lineToEditNumber = cy

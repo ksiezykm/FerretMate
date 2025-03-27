@@ -42,7 +42,7 @@ func setCurrentViewDatabases(g *gocui.Gui, v *gocui.View) error {
 
 	model.State.Messages = "Enter: view | Delete: delete | Ctrl+n: new"
 	updateMessages(g)
-	
+
 	return nil
 }
 
@@ -57,6 +57,10 @@ func selectDatabase(g *gocui.Gui, v *gocui.View) error {
 	}
 	var err error
 	model.State.Collections = nil
+
+	if selected == "" {
+		return nil
+	}
 
 	model.State.SelectedDB = selected
 	model.State.DBclient, err = db.Connect2(model.State.SelectedConnection, model.State.SelectedDB)
