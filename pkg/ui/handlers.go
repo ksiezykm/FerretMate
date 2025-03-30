@@ -65,8 +65,8 @@ func cursorDown(g *gocui.Gui, v *gocui.View) error {
 
 	step := int(len(selected)/xSize) + 1
 
-	model.State.Messages = selected
-	updateMessages(g)
+	// model.State.Messages = selected
+	// updateMessages(g)
 
 	if cy < max {
 		if cy >= ySize-1 {

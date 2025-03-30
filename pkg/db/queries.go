@@ -14,7 +14,7 @@ import (
 
 // GetDBs retrieves the list of databases from the given connection.
 func GetDBs(client *mongo.Client) ([]string, error) {
-	dbs, err := client.ListDatabaseNames(context.TODO(), bson.D{})//client.Database(dbName).ListCollectionNames(context.TODO(), bson.D{})
+	dbs, err := client.ListDatabaseNames(context.TODO(), bson.D{}) //client.Database(dbName).ListCollectionNames(context.TODO(), bson.D{})
 	if err != nil {
 		return nil, fmt.Errorf("failed to list collections: %w", err)
 	}
@@ -28,7 +28,7 @@ func GetCollections(dbName string, client *mongo.Client) ([]string, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to list collections: %w", err)
 	}
-	
+
 	return collections, nil
 
 }
@@ -202,7 +202,7 @@ func CreateDatabase(client *mongo.Client) error {
 		log.Fatal(err)
 	}
 
-	fmt.Println("Database and collection created (or already existed).")
+	//fmt.Println("Database and collection created (or already existed).")
 
 	// Drop the collection
 	err = collection.Drop(context.TODO())
@@ -210,8 +210,19 @@ func CreateDatabase(client *mongo.Client) error {
 		log.Fatal(err)
 	}
 
-	fmt.Println("Collection dropped.")
-
 	return nil
 
+}
+
+func DeleteDatabase(client *mongo.Client, dbName string) error {
+	// Select the database
+	database := client.Database(dbName)
+
+	// Drop the database
+	err := database.Drop(context.TODO())
+	if err != nil {
+		return fmt.Errorf("error dropping database: %w", err)
+	}
+
+	return nil
 }

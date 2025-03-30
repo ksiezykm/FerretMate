@@ -23,6 +23,9 @@ func RegisterKeyBindingsDatabases(g *gocui.Gui) error {
 	if err := g.SetKeybinding("databases", gocui.KeyCtrlN, gocui.ModNone, createNewDatabase); err != nil {
 		return err
 	}
+	if err := g.SetKeybinding("databases", gocui.KeyDelete, gocui.ModNone, deleteDatabase); err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -96,20 +99,47 @@ func selectDatabase(g *gocui.Gui, v *gocui.View) error {
 }
 
 func createNewDatabase(g *gocui.Gui, v *gocui.View) error {
-	var err error
 
-	err = db.CreateDatabase(model.State.DBclient)
+	err := db.CreateDatabase(model.State.DBclient)
 	if err != nil {
 		log.Fatalf("Failed to create database: %v", err)
 	}
 
-	// model.State.Documents, err = db.GetDocuments(model.State.DBname, model.State.SelectedCollection, model.State.DBclient)
-	// if err != nil {
-	// 	log.Fatalf("Failed to retrieve collection: %v", err)
-	// }
-	// model.State.DocumentContent = ""
-	// updateDocumentDetails(g)
-	// updateDocuments(g)
+	model.State.DBnames, err = db.GetDBs(model.State.DBclient)
+	if err != nil {
+		log.Fatalf("Failed to get DBs: %v", err)
+	}
 
+	updateDatabases(g)
+
+	return nil
+}
+
+func deleteDatabase(g *gocui.Gui, v *gocui.View) error {
+
+	_, cy := v.Cursor()
+	lines := strings.Split(v.Buffer(), "\n")
+
+	selected := ""
+
+	if cy >= 0 && cy < len(lines)-1 {
+		selected = lines[cy]
+	}
+
+	if selected == "" {
+		return nil
+	}
+
+	err := db.DeleteDatabase(model.State.DBclient, selected)
+	if err != nil {
+		log.Fatalf("Failed to delete database: %v", err)
+	}
+
+	model.State.DBnames, err = db.GetDBs(model.State.DBclient)
+	if err != nil {
+		log.Fatalf("Failed to get DBs: %v", err)
+	}
+
+	updateDatabases(g)
 	return nil
 }
