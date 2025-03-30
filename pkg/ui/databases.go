@@ -1,6 +1,7 @@
 package ui
 
 import (
+	"fmt"
 	"log"
 	"strings"
 
@@ -43,6 +44,18 @@ func setCurrentViewDatabases(g *gocui.Gui, v *gocui.View) error {
 	model.State.Messages = "Enter: view | Delete: delete | Ctrl+n: new"
 	updateMessages(g)
 
+	return nil
+}
+
+func updateDatabases(g *gocui.Gui) error {
+	v, err := g.View("databases")
+	if err != nil {
+		return err
+	}
+	v.Clear()
+	for _, dbname := range model.State.DBnames {
+		fmt.Fprintln(v, dbname)
+	}
 	return nil
 }
 

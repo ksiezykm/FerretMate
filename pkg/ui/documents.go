@@ -2,6 +2,7 @@ package ui
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"strings"
 
@@ -47,6 +48,19 @@ func setCurrentViewDocuments(g *gocui.Gui, v *gocui.View) error {
 	model.State.Messages = "Enter: view | Delete: delete | Ctrl+n: new"
 	updateMessages(g)
 
+	return nil
+}
+
+// updateDocuments
+func updateDocuments(g *gocui.Gui) error {
+	v, err := g.View("documents")
+	if err != nil {
+		return err
+	}
+	v.Clear()
+	for _, doc := range model.State.Documents {
+		fmt.Fprintln(v, doc)
+	}
 	return nil
 }
 

@@ -1,6 +1,7 @@
 package ui
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/awesome-gocui/gocui"
@@ -41,6 +42,19 @@ func setCurrentViewContent(g *gocui.Gui, v *gocui.View) error {
 	model.State.Messages = "Enter: edit"
 	updateMessages(g)
 
+	return nil
+}
+
+// updateDocument Content
+func updateDocumentContent(g *gocui.Gui) error {
+	v, err := g.View("content")
+	if err != nil {
+		return err
+	}
+	v.Clear()
+
+	fmt.Fprintln(v, model.State.DocumentContent)
+	v.SetOrigin(0, 0)
 	return nil
 }
 

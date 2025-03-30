@@ -29,6 +29,18 @@ func RegisterKeyBindingsEdit(g *gocui.Gui) error {
 	return nil
 }
 
+func updateEdit(g *gocui.Gui, line string) error {
+	v, err := g.View("edit")
+	if err != nil {
+		return err
+	}
+	v.Clear()
+
+	fmt.Fprintln(v, line)
+
+	return nil
+}
+
 func editView(g *gocui.Gui) error {
 	maxX, maxY := g.Size()
 	if v, err := g.SetView("edit", maxX/2-30, maxY/2-5, maxX/2+30, maxY/2-3, 0); err != nil {
