@@ -100,15 +100,21 @@ func selectDatabase(g *gocui.Gui, v *gocui.View) error {
 
 func createNewDatabase(g *gocui.Gui, v *gocui.View) error {
 
-	err := db.CreateDatabase(model.State.DBclient)
-	if err != nil {
-		log.Fatalf("Failed to create database: %v", err)
+	lineToEdit = "new_db"
+
+	if err := editView(g); err != nil {
+		return err
 	}
 
-	model.State.DBnames, err = db.GetDBs(model.State.DBclient)
-	if err != nil {
-		log.Fatalf("Failed to get DBs: %v", err)
-	}
+	// err := db.CreateDatabase(model.State.DBclient)
+	// if err != nil {
+	// 	log.Fatalf("Failed to create database: %v", err)
+	// }
+
+	// model.State.DBnames, err = db.GetDBs(model.State.DBclient)
+	// if err != nil {
+	// 	log.Fatalf("Failed to get DBs: %v", err)
+	// }
 
 	updateDatabases(g)
 
