@@ -3,6 +3,7 @@ package ui
 import (
 	"errors"
 	"fmt"
+	"log"
 	"strings"
 
 	"github.com/awesome-gocui/gocui"
@@ -12,6 +13,7 @@ import (
 
 var lineToEdit string
 var lineToEditNumber int
+var mode string
 
 func RegisterKeyBindingsEdit(g *gocui.Gui) error {
 	if err := g.SetKeybinding("edit", gocui.KeyCtrlS, gocui.ModNone, saveChangesToEditedDocument); err != nil {
@@ -85,6 +87,25 @@ func saveChangesToEditedDocument(g *gocui.Gui, v *gocui.View) error {
 	}
 
 	line = strings.ReplaceAll(line, "█", "")
+
+	if mode == "create" {
+
+		err := db.CreateDatabase(model.State.DBclient, line)
+		if err != nil {
+			log.Fatalf("Failed to create database: %v", err)
+		}
+
+		model.State.DBnames, err = db.GetDBs(model.State.DBclient)
+		if err != nil {
+			log.Fatalf("Failed to get DBs: %v", err)
+		}
+
+		updateDatabases(g)
+		mode = ""
+
+		return nil
+	}
+
 	lines := strings.Split(model.State.DocumentContent, "\n")
 
 	lines[lineToEditNumber] = line

@@ -3,6 +3,7 @@ package ui
 import (
 	"fmt"
 	"log"
+	"math/rand"
 	"strings"
 
 	"github.com/awesome-gocui/gocui"
@@ -100,23 +101,14 @@ func selectDatabase(g *gocui.Gui, v *gocui.View) error {
 
 func createNewDatabase(g *gocui.Gui, v *gocui.View) error {
 
-	lineToEdit = "new_db"
+	random := rand.Intn(100) + 1
+
+	lineToEdit = "new_db" + fmt.Sprint(random)
+	mode = "create"
 
 	if err := editView(g); err != nil {
 		return err
 	}
-
-	// err := db.CreateDatabase(model.State.DBclient)
-	// if err != nil {
-	// 	log.Fatalf("Failed to create database: %v", err)
-	// }
-
-	// model.State.DBnames, err = db.GetDBs(model.State.DBclient)
-	// if err != nil {
-	// 	log.Fatalf("Failed to get DBs: %v", err)
-	// }
-
-	updateDatabases(g)
 
 	return nil
 }
