@@ -104,7 +104,7 @@ func createNewDatabase(g *gocui.Gui, v *gocui.View) error {
 	random := rand.Intn(100) + 1
 
 	lineToEdit = "new_db" + fmt.Sprint(random)
-	mode = "create"
+	mode = "createDB"
 
 	if err := editView(g); err != nil {
 		return err

@@ -88,7 +88,7 @@ func saveChangesToEditedDocument(g *gocui.Gui, v *gocui.View) error {
 
 	line = strings.ReplaceAll(line, "█", "")
 
-	if mode == "create" {
+	if mode == "createDB" {
 
 		err := db.CreateDatabase(model.State.DBclient, line)
 		if err != nil {
@@ -101,6 +101,8 @@ func saveChangesToEditedDocument(g *gocui.Gui, v *gocui.View) error {
 		}
 
 		updateDatabases(g)
+		closeEditView(g, v)
+
 		mode = ""
 
 		return nil
@@ -115,6 +117,8 @@ func saveChangesToEditedDocument(g *gocui.Gui, v *gocui.View) error {
 	updateDocumentContent(g)
 
 	db.UpdateDocumentByID(model.State.SelectedDB, model.State.SelectedCollection, model.State.SelectedDocument, model.State.DocumentContent, model.State.DBclient)
+
+	closeEditView(g, v)
 
 	return nil
 }
@@ -192,8 +196,15 @@ func closeEditView(g *gocui.Gui, v *gocui.View) error {
 	if err := g.DeleteView("messages"); err != nil {
 		return err
 	}
-	if _, err := g.SetCurrentView("content"); err != nil {
-		return err
+	switch mode {
+	case "createDB":
+		if _, err := g.SetCurrentView("databases"); err != nil {
+			return err
+		}
+	case "":
+		if _, err := g.SetCurrentView("content"); err != nil {
+			return err
+		}
 	}
 	return nil
 
