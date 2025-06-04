@@ -86,7 +86,7 @@ func Layout(g *gocui.Gui) error {
 		v.SelFgColor = gocui.ColorGreen
 		v.Autoscroll = false
 		v.Editable = false
-		v.Wrap = true
+		v.Wrap = false
 		// for _, doc := range documents {
 		//      // Serialize BSON to JSON for display
 		//      docJSON, _ := json.MarshalIndent(doc, "", "  ")
@@ -104,7 +104,7 @@ func Layout(g *gocui.Gui) error {
 		v.SelFgColor = gocui.ColorGreen
 		v.Autoscroll = false
 		v.Editable = false
-		v.Wrap = true
+		v.Wrap = false
 		// if selectedDocument != nil {
 		//      // Serialize the selected document to JSON for display
 		//      docJSON, _ := json.MarshalIndent(selectedDocument, "", "  ")
