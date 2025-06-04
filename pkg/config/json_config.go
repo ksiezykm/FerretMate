@@ -3,11 +3,10 @@ package config
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/ksiezykm/FerretMate/pkg/model"
 	"os"
 	"path/filepath"
-	"github.com/ksiezykm/FerretMate/pkg/model"
 )
-
 
 func loadConfigMap(file string) (map[string]model.DatabaseConfig, error) {
 	configFile, err := os.Open(file)

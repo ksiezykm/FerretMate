@@ -191,7 +191,7 @@ func CreateDocument(dbName, collectionName string, client *mongo.Client) error {
 func CreateDatabase(client *mongo.Client, dbName string) error {
 
 	// Select the database and collection
-	database := client.Database(dbName)          // Database name
+	database := client.Database(dbName)                  // Database name
 	collection := database.Collection("temp_collection") // Collection name
 
 	// Insert a document, which creates the database (if it doesn't exist)

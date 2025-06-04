@@ -19,20 +19,6 @@ func main() {
 
 	model.State.Connections = configMap
 
-	// // Connect to DB and get collections
-	// model.State.DBclient, err = db.ConnectToDB(configMap["produkcja"])
-	// if err != nil {
-	// 	log.Fatalf("Failed to connect to FerretDB: %v", err)
-	// }
-	// defer model.State.DBclient.Disconnect(context.TODO())
-
-	// model.State.DBname = "testDB"
-
-	// model.State.Collections, err = db.GetCollections(model.State.DBname)
-	// if err != nil {
-	// 	log.Fatalf("Failed to retrieve collections: %v", err)
-	// }
-
 	// Create the GUI
 	g, err := gocui.NewGui(gocui.OutputNormal, true)
 	if err != nil {
@@ -47,8 +33,8 @@ func main() {
 		log.Fatalf("Failed to register keybindings: %v", err)
 	}
 
-		// Start the main loop
-		if err := g.MainLoop(); err != nil && err != gocui.ErrQuit {
-			log.Fatal(err)
-		}
+	// Start the main loop
+	if err := g.MainLoop(); err != nil && err != gocui.ErrQuit {
+		log.Fatal(err)
 	}
+}

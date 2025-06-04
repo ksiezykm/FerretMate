@@ -7,8 +7,6 @@ import (
 	"github.com/ksiezykm/FerretMate/pkg/model"
 )
 
-
-
 // layout defines the UI layout with three panels
 func Layout(g *gocui.Gui) error {
 	maxX, maxY := g.Size()
