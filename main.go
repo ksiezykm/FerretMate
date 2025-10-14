@@ -4,10 +4,11 @@ import (
 	"log"
 	"strings"
 
-	"lesson6/list"
-	"lesson6/model"
-	"lesson6/notepad"
-	"lesson6/popup"
+	"github.com/ksiezykm/FerretMate/db"
+	"github.com/ksiezykm/FerretMate/list"
+	"github.com/ksiezykm/FerretMate/model"
+	"github.com/ksiezykm/FerretMate/notepad"
+	"github.com/ksiezykm/FerretMate/popup"
 
 	"github.com/awesome-gocui/gocui"
 )
@@ -21,11 +22,20 @@ func main() {
 
 	g.Cursor = false
 
-	model := &model.Model{
+	connections, err := model.LoadConnections()
+	if err != nil {
+		log.Panicln(err)
+	}
 
-		SelectedListView: "connections",
+	var connNames []string
+	for _, c := range connections {
+		connNames = append(connNames, c.Name)
+	}
 
-		Connections:        []string{"Localhost", "Production", "Staging"},
+	m := &model.Model{
+		SelectedListView:   "connections",
+		LoadedConnections:  connections,
+		Connections:        connNames,
 		SelectedConnection: "",
 
 		DBs:        []string{"MongoDB", "FerretDB", "Postgres", "MySQL", "SQLite1"},
@@ -210,8 +220,8 @@ func main() {
 				note.Update(g, newFullContent)
 
 				// Update the document in model
-				if model.SelectedDocument != "" {
-					model.DocumentContent[model.SelectedDocument] = newFullContent
+				if m.SelectedDocument != "" {
+					m.DocumentContent[m.SelectedDocument] = newFullContent
 				}
 
 				// Restore notepad border color
@@ -248,7 +258,7 @@ func main() {
 	note.OnBack = func() {
 		// Go back to document list
 		listView.Title = "Documents"
-		listView.Items = model.Documents
+		listView.Items = m.Documents
 		listView.Update(g)
 
 		// Update border colors
@@ -265,56 +275,85 @@ func main() {
 	listView = &list.List{
 		Name:     "listView",
 		Title:    "Connections",
-		Items:    model.Connections,
+		Items:    m.Connections,
 		Selected: 0,
 		OnSelect: func(item string) {
 
-			if model.SelectedListView == "connections" {
-				model.SelectedListView = "dbs"
-				model.SelectedConnection = item
+			if m.SelectedListView == "connections" {
+				m.SelectedConnection = item
 
-				// place for function to get DBs from selected connection
-				// model.DBs = fetchDBs(item)
+				var selectedConn model.Connection
+				for _, c := range m.LoadedConnections {
+					if c.Name == item {
+						selectedConn = c
+						break
+					}
+				}
 
-				// update list to show DBs
+				if err := db.Connect(selectedConn); err != nil {
+					log.Printf("Connection failed: %v", err)
+					return
+				}
+
+				dbs, err := db.ListDatabases(db.Client)
+				if err != nil {
+					log.Printf("Failed to list databases: %v", err)
+					return
+				}
+				m.DBs = dbs
+
+				m.SelectedListView = "dbs"
+
 				listView.Title = "DBs"
-				listView.Items = model.DBs
+				listView.Items = m.DBs
 
-				// when Enter is pressed in list, update editor
 				listView.Update(g)
-			} else if model.SelectedListView == "dbs" {
-				model.SelectedListView = "collections"
-				model.SelectedDB = item
+			} else if m.SelectedListView == "dbs" {
+				m.SelectedDB = item
 
-				// place for function to get collections from selected DB
-				// model.Collections = fetchCollections(item)
+				colls, err := db.ListCollections(db.Client, item)
+				if err != nil {
+					log.Printf("Failed to list collections: %v", err)
+					return
+				}
+				m.Collections = colls
 
-				// update list to show collections
+				m.SelectedListView = "collections"
+
 				listView.Title = "Collections"
-				listView.Items = model.Collections
+				listView.Items = m.Collections
 
-				// when Enter is pressed in list, update editor
 				listView.Update(g)
-			} else if model.SelectedListView == "collections" {
-				model.SelectedListView = "documents"
-				model.SelectedCollection = item
+			} else if m.SelectedListView == "collections" {
+				m.SelectedCollection = item
 
-				// place for function to get documents from selected collection
-				// model.Documents = fetchDocuments(item)
+				docs, err := db.ListDocuments(db.Client, m.SelectedDB, item)
+				if err != nil {
+					log.Printf("Failed to list documents: %v", err)
+					return
+				}
 
-				// update list to show documents
+				m.DocumentContent = make(map[string]string)
+				m.Documents = []string{}
+				for i, doc := range docs {
+					name := item + "_" + string(rune('0'+i))
+					m.Documents = append(m.Documents, name)
+					m.DocumentContent[name] = doc
+				}
+
+				m.SelectedListView = "documents"
+
 				listView.Title = "Documents"
-				listView.Items = model.Documents
+				listView.Items = m.Documents
 
-				// when Enter is pressed in list, update editor
 				listView.Update(g)
-			} else if model.SelectedListView == "documents" {
+			} else if m.SelectedListView == "documents" {
 				// Display the selected document in the notepad
-				model.SelectedDocument = item
+				m.SelectedDocument = item
 
 				// Get the document content from mockup data
 				var content string
-				if docContent, exists := model.DocumentContent[item]; exists {
+				if docContent, exists := m.DocumentContent[item]; exists {
 					content = docContent
 				} else {
 					content = "{\n  \"_id\": \"" + item + "\",\n  \"error\": \"Document not found in mockup data\"\n}"
@@ -343,7 +382,7 @@ func main() {
 			// }
 		},
 		OnBack: func() {
-			if model.SelectedListView == "documents" {
+			if m.SelectedListView == "documents" {
 				// If we're viewing a document, first check if we need to go back to the list
 				currentView := g.CurrentView()
 				if currentView != nil && currentView.Name() == note.Name {
@@ -357,27 +396,27 @@ func main() {
 				}
 
 				// Otherwise, go back to collections
-				model.SelectedListView = "collections"
-				model.SelectedDocument = ""
+				m.SelectedListView = "collections"
+				m.SelectedDocument = ""
 
 				listView.Title = "Collections"
-				listView.Items = model.Collections
+				listView.Items = m.Collections
 				listView.Update(g)
-			} else if model.SelectedListView == "collections" {
+			} else if m.SelectedListView == "collections" {
 				// Go back to DBs
-				model.SelectedListView = "dbs"
-				model.SelectedCollection = ""
+				m.SelectedListView = "dbs"
+				m.SelectedCollection = ""
 
 				listView.Title = "DBs"
-				listView.Items = model.DBs
+				listView.Items = m.DBs
 				listView.Update(g)
-			} else if model.SelectedListView == "dbs" {
+			} else if m.SelectedListView == "dbs" {
 				// Go back to connections
-				model.SelectedListView = "connections"
-				model.SelectedDB = ""
+				m.SelectedListView = "connections"
+				m.SelectedDB = ""
 
 				listView.Title = "Connections"
-				listView.Items = model.Connections
+				listView.Items = m.Connections
 				listView.Update(g)
 			}
 			// If already at connections, do nothing (or could quit)

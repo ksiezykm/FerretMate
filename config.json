@@ -1,14 +1,18 @@
+[
   {
-    "ferret2": {
-      "host": "localhost:37021",
-      "username": "usr_ps2",
-      "password": "pass_ps2",
-      "database": "testdb"
-    },
-    "ferret1": {
-      "host": "localhost:37021",
-      "username": "usr_ps2",
-      "password": "pass_ps2",
-      "database": "testdb"
-    }
+    "name": "Local FerretDB",
+    "host": "localhost",
+    "port": 37021,
+    "username": "usr_ps2",
+    "password": "pass_ps2",
+    "database": "testdb"
+  },
+  {
+    "name": "FerretDB 1",
+    "host": "localhost",
+    "port": 37021,
+    "username": "usr_ps2",
+    "password": "pass_ps2",
+    "database": "testdb"
   }
+]

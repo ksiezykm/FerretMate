@@ -3,6 +3,7 @@ package model
 type Model struct {
 	SelectedListView string
 
+	LoadedConnections  []Connection
 	Connections        []string
 	SelectedConnection string
 
@@ -15,6 +16,5 @@ type Model struct {
 	Documents        []string
 	SelectedDocument string
 
-	// Mockup documents - map of document name to JSON content
 	DocumentContent map[string]string
 }
