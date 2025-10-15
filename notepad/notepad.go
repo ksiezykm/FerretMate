@@ -21,7 +21,7 @@ type Notepad struct {
 // Layout draws the notepad
 func (n *Notepad) Layout(g *gocui.Gui) error {
 	maxX, maxY := g.Size()
-	if v, err := g.SetView(n.Name, maxX/2+1, 3, maxX-2, maxY-2, 0); err != nil {
+	if v, err := g.SetView(n.Name, maxX/2+1, 3, maxX-2, maxY-3, 0); err != nil {
 		if err != gocui.ErrUnknownView {
 			return err
 		}

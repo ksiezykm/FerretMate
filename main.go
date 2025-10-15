@@ -423,7 +423,7 @@ func main() {
 
 	// Layout manager
 	g.SetManagerFunc(func(g *gocui.Gui) error {
-		maxX, _ := g.Size()
+		maxX, maxY := g.Size()
 
 		if v, err := g.SetView("header", 0, 0, maxX-1, 2, 0); err != nil {
 			if err != gocui.ErrUnknownView {
@@ -438,6 +438,16 @@ func main() {
 				padding = 0
 			}
 			v.Write([]byte(strings.Repeat(" ", padding) + title))
+		}
+
+		if v, err := g.SetView("footer", 0, maxY-3, maxX-1, maxY-1, 0); err != nil {
+			if err != gocui.ErrUnknownView {
+				return err
+			}
+			v.Frame = false
+			v.Title = ""
+			v.Clear()
+			v.Write([]byte(" ↑↓: Navigate | Enter: Select | ESC: Back | Ctrl+C: Quit"))
 		}
 
 		if err := listView.Layout(g); err != nil {

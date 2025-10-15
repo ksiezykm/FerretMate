@@ -36,7 +36,7 @@ func (l *List) Update(g *gocui.Gui) error {
 // Layout draws the list widget
 func (l *List) Layout(g *gocui.Gui) error {
 	maxX, maxY := g.Size()
-	if v, err := g.SetView(l.Name, 1, 3, maxX/2-2, maxY-2, 0); err != nil {
+	if v, err := g.SetView(l.Name, 1, 3, maxX/2-2, maxY-3, 0); err != nil {
 		if err != gocui.ErrUnknownView {
 			return err
 		}
