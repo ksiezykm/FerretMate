@@ -290,24 +290,22 @@ func main() {
 					}
 				}
 
-				if err := db.Connect(selectedConn); err != nil {
-					log.Printf("Connection failed: %v", err)
-					return
-				}
+				popup.ShowConnect(g, selectedConn, func() error {
+					dbs, err := db.ListDatabases(db.Client)
+					if err != nil {
+						return err
+					}
+					m.DBs = dbs
+					m.SelectedListView = "dbs"
 
-				dbs, err := db.ListDatabases(db.Client)
-				if err != nil {
-					log.Printf("Failed to list databases: %v", err)
-					return
-				}
-				m.DBs = dbs
-
-				m.SelectedListView = "dbs"
-
-				listView.Title = "DBs"
-				listView.Items = m.DBs
-
-				listView.Update(g)
+					g.Update(func(g *gocui.Gui) error {
+						listView.Title = "DBs"
+						listView.Items = m.DBs
+						return listView.Update(g)
+					})
+					return nil
+				})
+				return
 			} else if m.SelectedListView == "dbs" {
 				m.SelectedDB = item
 
