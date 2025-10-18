@@ -281,6 +281,7 @@ func main() {
 
 			if m.SelectedListView == "connections" {
 				m.SelectedConnection = item
+				m.SelectedConnectionIndex = listView.Selected
 
 				var selectedConn model.Connection
 				for _, c := range m.LoadedConnections {
@@ -301,6 +302,7 @@ func main() {
 					g.Update(func(g *gocui.Gui) error {
 						listView.Title = "DBs"
 						listView.Items = m.DBs
+						listView.Selected = m.SelectedDBIndex
 						return listView.Update(g)
 					})
 					return nil
@@ -308,6 +310,7 @@ func main() {
 				return
 			} else if m.SelectedListView == "dbs" {
 				m.SelectedDB = item
+				m.SelectedDBIndex = listView.Selected
 
 				colls, err := db.ListCollections(db.Client, item)
 				if err != nil {
@@ -320,10 +323,12 @@ func main() {
 
 				listView.Title = "Collections"
 				listView.Items = m.Collections
+				listView.Selected = m.SelectedCollectionIndex
 
 				listView.Update(g)
 			} else if m.SelectedListView == "collections" {
 				m.SelectedCollection = item
+				m.SelectedCollectionIndex = listView.Selected
 
 				docs, err := db.ListDocuments(db.Client, m.SelectedDB, item)
 				if err != nil {
@@ -399,6 +404,7 @@ func main() {
 
 				listView.Title = "Collections"
 				listView.Items = m.Collections
+				listView.Selected = m.SelectedCollectionIndex
 				listView.Update(g)
 			} else if m.SelectedListView == "collections" {
 				// Go back to DBs
@@ -407,6 +413,7 @@ func main() {
 
 				listView.Title = "DBs"
 				listView.Items = m.DBs
+				listView.Selected = m.SelectedDBIndex
 				listView.Update(g)
 			} else if m.SelectedListView == "dbs" {
 				// Go back to connections
@@ -415,6 +422,7 @@ func main() {
 
 				listView.Title = "Connections"
 				listView.Items = m.Connections
+				listView.Selected = m.SelectedConnectionIndex
 				listView.Update(g)
 			}
 			// If already at connections, do nothing (or could quit)

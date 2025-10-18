@@ -18,8 +18,6 @@ type List struct {
 
 // Update replaces list items and redraws the view.
 func (l *List) Update(g *gocui.Gui) error {
-	l.Selected = 0 // reset selection to first item (optional)
-
 	v, err := g.View(l.Name)
 	if err != nil {
 		return err
@@ -29,6 +27,16 @@ func (l *List) Update(g *gocui.Gui) error {
 	for _, item := range l.Items {
 		v.Write([]byte(item + "\n"))
 	}
+
+	if l.Selected >= len(l.Items) {
+		l.Selected = len(l.Items) - 1
+	}
+	if l.Selected < 0 {
+		l.Selected = 0
+	}
+
+	v.SetCursor(0, l.Selected)
+	v.SetOrigin(0, 0)
 
 	return nil
 }
