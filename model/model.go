@@ -17,6 +17,7 @@ type Model struct {
 	SelectedCollectionIndex int
 
 	Documents             []string
+	DocumentObjects       map[string]interface{}
 	SelectedDocument      string
 	SelectedDocumentIndex int
 

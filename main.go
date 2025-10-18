@@ -45,6 +45,7 @@ func main() {
 		SelectedCollection: "",
 
 		Documents:        []string{"user_001", "user_002", "order_12345", "product_abc"},
+		DocumentObjects:  make(map[string]interface{}),
 		SelectedDocument: "",
 
 		// Mockup MongoDB documents as JSON
@@ -217,11 +218,33 @@ func main() {
 
 				// Rebuild the full content
 				newFullContent := strings.Join(note.Lines, "\n")
-				note.Update(g, newFullContent)
 
 				// Update the document in model
 				if m.SelectedDocument != "" {
 					m.DocumentContent[m.SelectedDocument] = newFullContent
+
+					// Save to database
+					if err := db.UpdateDocument(db.Client, m.SelectedDB, m.SelectedCollection, newFullContent); err != nil {
+						log.Printf("Failed to save document: %v", err)
+						popup.ShowInfo(g, "Failed to save document")
+					} else {
+						// Re-fetch document from database
+						if docID, ok := m.DocumentObjects[m.SelectedDocument]; ok {
+							if freshDoc, err := db.GetDocument(db.Client, m.SelectedDB, m.SelectedCollection, docID); err == nil {
+								m.DocumentContent[m.SelectedDocument] = freshDoc
+								note.Update(g, freshDoc)
+								popup.ShowInfo(g, "Document saved successfully")
+							} else {
+								note.Update(g, newFullContent)
+								popup.ShowInfo(g, "Saved but failed to refresh")
+							}
+						} else {
+							note.Update(g, newFullContent)
+							popup.ShowInfo(g, "Saved successfully")
+						}
+					}
+				} else {
+					note.Update(g, newFullContent)
 				}
 
 				// Restore notepad border color
@@ -337,11 +360,16 @@ func main() {
 				}
 
 				m.DocumentContent = make(map[string]string)
+				m.DocumentObjects = make(map[string]interface{})
 				m.Documents = []string{}
 				for i, doc := range docs {
-					name := item + "_" + string(rune('0'+i))
+					name := doc.Summary
+					if name == "" {
+						name = item + "_" + string(rune('0'+i))
+					}
 					m.Documents = append(m.Documents, name)
-					m.DocumentContent[name] = doc
+					m.DocumentContent[name] = doc.JSON
+					m.DocumentObjects[name] = doc.ID
 				}
 
 				m.SelectedListView = "documents"

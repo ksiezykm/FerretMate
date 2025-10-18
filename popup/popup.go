@@ -100,3 +100,39 @@ func (p *Popup) BindKeys(g *gocui.Gui) {
 		log.Panicln(err)
 	}
 }
+
+func ShowInfo(g *gocui.Gui, message string) {
+	maxX, maxY := g.Size()
+	width := len(message) + 4
+	if width > maxX-10 {
+		width = maxX - 10
+	}
+	height := 5
+	x0 := (maxX - width) / 2
+	y0 := (maxY - height) / 2
+	x1 := x0 + width
+	y1 := y0 + height
+
+	g.Update(func(g *gocui.Gui) error {
+		v, err := g.SetView("info_popup", x0, y0, x1, y1, 0)
+		if err != nil && err != gocui.ErrUnknownView {
+			return err
+		}
+		v.Title = " Info "
+		v.Clear()
+		v.Write([]byte("\n " + message))
+		g.SetCurrentView("info_popup")
+
+		closePopup := func(g *gocui.Gui, v *gocui.View) error {
+			g.DeleteView("info_popup")
+			g.DeleteKeybindings("info_popup")
+			g.SetCurrentView("editor")
+			return nil
+		}
+
+		g.SetKeybinding("info_popup", gocui.KeyEnter, gocui.ModNone, closePopup)
+		g.SetKeybinding("info_popup", gocui.KeyEsc, gocui.ModNone, closePopup)
+
+		return nil
+	})
+}
