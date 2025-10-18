@@ -406,6 +406,12 @@ func main() {
 				listView.Items = m.Collections
 				listView.Selected = m.SelectedCollectionIndex
 				listView.Update(g)
+
+				note.Update(g, "Pick something from the list...")
+				v, err := g.View(note.Name)
+				if err == nil {
+					v.Title = "Editor"
+				}
 			} else if m.SelectedListView == "collections" {
 				// Go back to DBs
 				m.SelectedListView = "dbs"
