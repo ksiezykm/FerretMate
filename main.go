@@ -489,7 +489,7 @@ func main() {
 			v.Frame = false
 			v.Title = ""
 			v.Clear()
-			v.Write([]byte(" ↑↓: Navigate | Enter: Select | ESC: Back | Ctrl+C: Quit"))
+			v.Write([]byte(" ↑↓: Navigate | Enter: Select | N: New | ESC: Back | Ctrl+C: Quit"))
 		}
 
 		if err := listView.Layout(g); err != nil {
@@ -509,7 +509,205 @@ func main() {
 	listView.SetActive(g, true)
 	note.SetActive(g, false)
 
-	// global quit
+	// Key binding for creating new items
+	if err := g.SetKeybinding("", 'n', gocui.ModNone, func(g *gocui.Gui, v *gocui.View) error {
+		switch m.SelectedListView {
+		case "dbs":
+			// Show popup for new database name
+			editPopup := &popup.Popup{
+				Name:       "newDatabasePopup",
+				Title:      "Create Database - Step 1/2 (Enter or Ctrl+S to continue, ESC to cancel)",
+				Content:    "",
+				SingleLine: true,
+				OnSave: func(dbName string) {
+					if dbName == "" {
+						return
+					}
+
+					if db.Client == nil {
+						popup.ShowInfo(g, "Not connected to any server")
+						return
+					}
+
+					// Store the database name temporarily
+					tempDBName := dbName
+
+					// Now ask for the collection name
+					collPopup := &popup.Popup{
+						Name:       "newCollectionPopup",
+						Title:      "Create Database - Step 2/2: Collection Name (Enter or Ctrl+S to create, ESC to cancel)",
+						Content:    "",
+						SingleLine: true,
+						OnSave: func(collName string) {
+							if collName == "" {
+								return
+							}
+
+							// Create the database with the first collection
+							if err := db.CreateDatabase(db.Client, tempDBName, collName); err != nil {
+								popup.ShowInfo(g, "Failed to create database")
+								log.Printf("Failed to create database: %v", err)
+								return
+							}
+
+							popup.ShowInfo(g, "Database created successfully")
+
+							// Refresh database list
+							dbs, err := db.ListDatabases(db.Client)
+							if err == nil {
+								m.DBs = dbs
+								m.SelectedDB = tempDBName
+								// Find and select the newly created database
+								for i, dbItem := range m.DBs {
+									if dbItem == tempDBName {
+										m.SelectedDBIndex = i
+										listView.Selected = i
+										break
+									}
+								}
+								listView.Items = m.DBs
+								listView.Update(g)
+
+								// Set focus back to list view
+								g.SetCurrentView(listView.Name)
+								g.Cursor = false
+							}
+						},
+						OnCancel: func() {
+							// Set focus back to list view on cancel
+							g.SetCurrentView(listView.Name)
+							g.Cursor = false
+						},
+					}
+					collPopup.Show(g)
+					collPopup.BindKeys(g)
+				},
+				OnCancel: func() {
+					// Set focus back to list view on cancel
+					g.SetCurrentView(listView.Name)
+					g.Cursor = false
+				},
+			}
+			editPopup.Show(g)
+			editPopup.BindKeys(g)
+
+		case "collections":
+			// Show popup for new collection name
+			editPopup := &popup.Popup{
+				Name:       "newCollectionPopup",
+				Title:      "Create Collection (Enter or Ctrl+S to create, ESC to cancel)",
+				Content:    "",
+				SingleLine: true,
+				OnSave: func(collName string) {
+					if collName == "" {
+						return
+					}
+
+					if db.Client == nil {
+						popup.ShowInfo(g, "Not connected to any server")
+						return
+					}
+
+					dbName := m.DBs[m.SelectedDBIndex]
+					if err := db.CreateCollection(db.Client, dbName, collName); err != nil {
+						popup.ShowInfo(g, "Failed to create collection")
+						log.Printf("Failed to create collection: %v", err)
+						return
+					}
+
+					popup.ShowInfo(g, "Collection created successfully")
+
+					// Refresh collection list
+					colls, err := db.ListCollections(db.Client, dbName)
+					if err == nil {
+						m.Collections = colls
+						m.SelectedCollection = collName
+						m.SelectedCollectionIndex = len(m.Collections) - 1
+						listView.Items = m.Collections
+						listView.Selected = len(m.Collections) - 1 // Select the newly created collection
+						listView.Update(g)
+
+						// Set focus back to list view
+						g.SetCurrentView(listView.Name)
+						g.Cursor = false
+					}
+				},
+				OnCancel: func() {
+					// Set focus back to list view on cancel
+					g.SetCurrentView(listView.Name)
+					g.Cursor = false
+				},
+			}
+			editPopup.Show(g)
+			editPopup.BindKeys(g)
+
+		case "documents":
+			// Show popup with template document JSON
+			templateDoc := `{
+  "_id": {
+    "$oid": "000000000000000000000000"
+  },
+  "new": "document",
+  "status": "pending"
+}`
+			editPopup := &popup.Popup{
+				Name:    "newDocumentPopup",
+				Title:   "Create Document (Ctrl+S to create, ESC to cancel)",
+				Content: templateDoc,
+				OnSave: func(docJSON string) {
+					if docJSON == "" {
+						return
+					}
+
+					if db.Client == nil {
+						popup.ShowInfo(g, "Not connected to any server")
+						return
+					}
+
+					dbName := m.DBs[m.SelectedDBIndex]
+					collName := m.Collections[m.SelectedCollectionIndex]
+
+					if err := db.CreateDocument(db.Client, dbName, collName, docJSON); err != nil {
+						popup.ShowInfo(g, "Failed to create document")
+						log.Printf("Failed to create document: %v", err)
+						return
+					}
+
+					popup.ShowInfo(g, "Document created successfully")
+
+					// Refresh document list
+					docs, err := db.ListDocuments(db.Client, dbName, collName)
+					if err == nil {
+						m.Documents = []string{}
+						for _, doc := range docs {
+							name := doc.Summary
+							m.DocumentObjects[name] = doc.ID
+							m.DocumentContent[name] = doc.JSON
+							m.Documents = append(m.Documents, name)
+						}
+						listView.Items = m.Documents
+						listView.Selected = len(m.Documents) - 1 // Select the newly created document
+						listView.Update(g)
+
+						// Set focus back to list view
+						g.SetCurrentView(listView.Name)
+						g.Cursor = false
+					}
+				},
+				OnCancel: func() {
+					// Set focus back to list view on cancel
+					g.SetCurrentView(listView.Name)
+					g.Cursor = false
+				},
+			}
+			editPopup.Show(g)
+			editPopup.BindKeys(g)
+		}
+
+		return nil
+	}); err != nil {
+		log.Panicln(err)
+	} // global quit
 	if err := g.SetKeybinding("", gocui.KeyCtrlC, gocui.ModNone, func(_ *gocui.Gui, _ *gocui.View) error {
 		return gocui.ErrQuit
 	}); err != nil {

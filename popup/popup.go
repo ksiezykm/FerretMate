@@ -8,11 +8,13 @@ import (
 
 // Popup is a modal dialog for editing text
 type Popup struct {
-	Name     string
-	Title    string
-	Content  string
-	OnSave   func(newContent string) // callback when content is saved
-	OnCancel func()                  // callback when cancelled
+	Name         string
+	Title        string
+	Content      string
+	OnSave       func(newContent string) // callback when content is saved
+	OnCancel     func()                  // callback when cancelled
+	SingleLine   bool                    // if true, Enter saves instead of adding newline
+	DisableEnter bool                    // if true, Enter key is completely disabled
 }
 
 // Show displays the popup
@@ -99,9 +101,27 @@ func (p *Popup) BindKeys(g *gocui.Gui) {
 	if err := g.SetKeybinding(p.Name, gocui.KeyEsc, gocui.ModNone, p.Cancel); err != nil {
 		log.Panicln(err)
 	}
+
+	// If SingleLine is true, Enter also saves (like Ctrl+S)
+	if p.SingleLine {
+		if err := g.SetKeybinding(p.Name, gocui.KeyEnter, gocui.ModNone, p.Save); err != nil {
+			log.Panicln(err)
+		}
+	} else if p.DisableEnter {
+		// Disable Enter completely - do nothing when pressed
+		if err := g.SetKeybinding(p.Name, gocui.KeyEnter, gocui.ModNone, func(g *gocui.Gui, v *gocui.View) error {
+			return nil // Do nothing
+		}); err != nil {
+			log.Panicln(err)
+		}
+	}
 }
 
 func ShowInfo(g *gocui.Gui, message string) {
+	ShowInfoWithFocus(g, message, "listView")
+}
+
+func ShowInfoWithFocus(g *gocui.Gui, message string, returnToView string) {
 	maxX, maxY := g.Size()
 	width := len(message) + 4
 	if width > maxX-10 {
@@ -126,7 +146,8 @@ func ShowInfo(g *gocui.Gui, message string) {
 		closePopup := func(g *gocui.Gui, v *gocui.View) error {
 			g.DeleteView("info_popup")
 			g.DeleteKeybindings("info_popup")
-			g.SetCurrentView("editor")
+			g.SetCurrentView(returnToView)
+			g.Cursor = false
 			return nil
 		}
 

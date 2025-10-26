@@ -165,3 +165,75 @@ func UpdateDocument(client *mongo.Client, dbName, collName string, docJSON strin
 
 	return nil
 }
+
+// CreateDatabase creates a new database by creating an initial collection
+// MongoDB requires at least one collection for a database to exist
+func CreateDatabase(client *mongo.Client, dbName, collName string) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	if client == nil {
+		return fmt.Errorf("database client is nil")
+	}
+
+	if dbName == "" {
+		return fmt.Errorf("database name cannot be empty")
+	}
+
+	if collName == "" {
+		return fmt.Errorf("collection name cannot be empty")
+	}
+
+	// Create the collection (this will also create the database)
+	err := client.Database(dbName).CreateCollection(ctx, collName)
+	if err != nil {
+		return fmt.Errorf("failed to create database: %w", err)
+	}
+
+	return nil
+}
+
+// CreateCollection creates a new collection in the specified database
+func CreateCollection(client *mongo.Client, dbName, collName string) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	err := client.Database(dbName).CreateCollection(ctx, collName)
+	if err != nil {
+		return fmt.Errorf("failed to create collection: %w", err)
+	}
+
+	return nil
+}
+
+// CreateDocument creates a new document with a new ObjectID
+func CreateDocument(client *mongo.Client, dbName, collName, docJSON string) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	var doc bson.M
+	if err := json.Unmarshal([]byte(docJSON), &doc); err != nil {
+		return fmt.Errorf("failed to parse JSON: %w", err)
+	}
+
+	// Generate new ObjectID if _id is not provided or is in template format
+	if rawID, ok := doc["_id"]; ok {
+		if idMap, ok := rawID.(map[string]interface{}); ok {
+			if _, hasOid := idMap["$oid"]; hasOid {
+				// Replace template ObjectID with new one
+				doc["_id"] = primitive.NewObjectID()
+			}
+		}
+	} else {
+		// No _id provided, generate one
+		doc["_id"] = primitive.NewObjectID()
+	}
+
+	coll := client.Database(dbName).Collection(collName)
+	_, err := coll.InsertOne(ctx, doc)
+	if err != nil {
+		return fmt.Errorf("failed to insert document: %w", err)
+	}
+
+	return nil
+}
