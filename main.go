@@ -489,7 +489,7 @@ func main() {
 			v.Frame = false
 			v.Title = ""
 			v.Clear()
-			v.Write([]byte(" ↑↓: Navigate | Enter: Select | N: New | ESC: Back | Ctrl+C: Quit"))
+			v.Write([]byte(" ↑↓: Navigate | Enter: Select | N: New | Del: Delete | ESC: Back | Ctrl+C: Quit"))
 		}
 
 		if err := listView.Layout(g); err != nil {
@@ -707,7 +707,138 @@ func main() {
 		return nil
 	}); err != nil {
 		log.Panicln(err)
-	} // global quit
+	}
+
+	// Key binding for deleting items
+	if err := g.SetKeybinding("", gocui.KeyDelete, gocui.ModNone, func(g *gocui.Gui, v *gocui.View) error {
+		switch m.SelectedListView {
+		case "dbs":
+			// Delete database - use current cursor position
+			if len(m.DBs) == 0 || listView.Selected >= len(m.DBs) {
+				return nil
+			}
+			dbName := m.DBs[listView.Selected]
+
+			popup.ShowConfirmation(g, "Delete database '"+dbName+"'?", func() {
+				if err := db.DeleteDatabase(db.Client, dbName); err != nil {
+					popup.ShowInfo(g, "Failed to delete database")
+					log.Printf("Failed to delete database: %v", err)
+					return
+				}
+
+				popup.ShowInfo(g, "Database deleted successfully")
+
+				// Refresh database list
+				dbs, err := db.ListDatabases(db.Client)
+				if err == nil {
+					m.DBs = dbs
+					// Adjust cursor position after deletion
+					if listView.Selected >= len(m.DBs) {
+						listView.Selected = len(m.DBs) - 1
+					}
+					if listView.Selected < 0 {
+						listView.Selected = 0
+					}
+					m.SelectedDBIndex = listView.Selected
+					listView.Items = m.DBs
+					listView.Update(g)
+				}
+			}, func() {
+				// Cancelled - do nothing
+			})
+
+		case "collections":
+			// Delete collection - use current cursor position
+			if len(m.Collections) == 0 || listView.Selected >= len(m.Collections) {
+				return nil
+			}
+			collName := m.Collections[listView.Selected]
+			dbName := m.DBs[m.SelectedDBIndex]
+
+			popup.ShowConfirmation(g, "Delete collection '"+collName+"'?", func() {
+				if err := db.DeleteCollection(db.Client, dbName, collName); err != nil {
+					popup.ShowInfo(g, "Failed to delete collection")
+					log.Printf("Failed to delete collection: %v", err)
+					return
+				}
+
+				popup.ShowInfo(g, "Collection deleted successfully")
+
+				// Refresh collection list
+				colls, err := db.ListCollections(db.Client, dbName)
+				if err == nil {
+					m.Collections = colls
+					// Adjust cursor position after deletion
+					if listView.Selected >= len(m.Collections) {
+						listView.Selected = len(m.Collections) - 1
+					}
+					if listView.Selected < 0 {
+						listView.Selected = 0
+					}
+					m.SelectedCollectionIndex = listView.Selected
+					listView.Items = m.Collections
+					listView.Update(g)
+				}
+			}, func() {
+				// Cancelled - do nothing
+			})
+
+		case "documents":
+			// Delete document - use current cursor position
+			if len(m.Documents) == 0 || listView.Selected >= len(m.Documents) {
+				return nil
+			}
+			docName := m.Documents[listView.Selected]
+			docID := m.DocumentObjects[docName]
+			dbName := m.DBs[m.SelectedDBIndex]
+			collName := m.Collections[m.SelectedCollectionIndex]
+
+			popup.ShowConfirmation(g, "Delete document '"+docName+"'?", func() {
+				if err := db.DeleteDocument(db.Client, dbName, collName, docID); err != nil {
+					popup.ShowInfo(g, "Failed to delete document")
+					log.Printf("Failed to delete document: %v", err)
+					return
+				}
+
+				popup.ShowInfo(g, "Document deleted successfully")
+
+				// Refresh document list
+				docs, err := db.ListDocuments(db.Client, dbName, collName)
+				if err == nil {
+					m.Documents = []string{}
+					m.DocumentObjects = make(map[string]interface{})
+					m.DocumentContent = make(map[string]string)
+					for _, doc := range docs {
+						name := doc.Summary
+						m.DocumentObjects[name] = doc.ID
+						m.DocumentContent[name] = doc.JSON
+						m.Documents = append(m.Documents, name)
+					}
+					// Adjust cursor position after deletion
+					if listView.Selected >= len(m.Documents) {
+						listView.Selected = len(m.Documents) - 1
+					}
+					if listView.Selected < 0 {
+						listView.Selected = 0
+					}
+					m.SelectedDocumentIndex = listView.Selected
+					listView.Items = m.Documents
+					listView.Update(g)
+
+					// Clear the notepad if the deleted document was being viewed
+					note.Update(g, "Pick something from the list...")
+				}
+			}, func() {
+				// Cancelled - do nothing
+			})
+		}
+
+		return nil
+	}); err != nil {
+		log.Panicln(err)
+	}
+
+	// global quit
 	if err := g.SetKeybinding("", gocui.KeyCtrlC, gocui.ModNone, func(_ *gocui.Gui, _ *gocui.View) error {
 		return gocui.ErrQuit
 	}); err != nil {

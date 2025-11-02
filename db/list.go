@@ -237,3 +237,48 @@ func CreateDocument(client *mongo.Client, dbName, collName, docJSON string) erro
 
 	return nil
 }
+
+// DeleteDocument deletes a document from a collection
+func DeleteDocument(client *mongo.Client, dbName, collName string, docID interface{}) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	coll := client.Database(dbName).Collection(collName)
+	result, err := coll.DeleteOne(ctx, bson.M{"_id": docID})
+	if err != nil {
+		return fmt.Errorf("failed to delete document: %w", err)
+	}
+
+	if result.DeletedCount == 0 {
+		return fmt.Errorf("no document found with _id: %v", docID)
+	}
+
+	return nil
+}
+
+// DeleteCollection deletes a collection from a database
+func DeleteCollection(client *mongo.Client, dbName, collName string) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	coll := client.Database(dbName).Collection(collName)
+	err := coll.Drop(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to delete collection: %w", err)
+	}
+
+	return nil
+}
+
+// DeleteDatabase deletes a database
+func DeleteDatabase(client *mongo.Client, dbName string) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	err := client.Database(dbName).Drop(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to delete database: %w", err)
+	}
+
+	return nil
+}

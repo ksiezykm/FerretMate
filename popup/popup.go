@@ -157,3 +157,57 @@ func ShowInfoWithFocus(g *gocui.Gui, message string, returnToView string) {
 		return nil
 	})
 }
+
+// ShowConfirmation shows a confirmation dialog with Yes/No options
+func ShowConfirmation(g *gocui.Gui, message string, onConfirm func(), onCancel func()) {
+	maxX, maxY := g.Size()
+	width := len(message) + 10
+	if width > maxX-10 {
+		width = maxX - 10
+	}
+	height := 7
+	x0 := (maxX - width) / 2
+	y0 := (maxY - height) / 2
+	x1 := x0 + width
+	y1 := y0 + height
+
+	g.Update(func(g *gocui.Gui) error {
+		v, err := g.SetView("confirm_popup", x0, y0, x1, y1, 0)
+		if err != nil && err != gocui.ErrUnknownView {
+			return err
+		}
+		v.Title = " Confirmation "
+		v.Clear()
+		v.Write([]byte("\n " + message + "\n\n Press Y to confirm, N to cancel"))
+		g.SetCurrentView("confirm_popup")
+
+		confirmAction := func(g *gocui.Gui, v *gocui.View) error {
+			g.DeleteView("confirm_popup")
+			g.DeleteKeybindings("confirm_popup")
+			if onConfirm != nil {
+				onConfirm()
+			}
+			g.SetCurrentView("listView")
+			g.Cursor = false
+			return nil
+		}
+
+		cancelAction := func(g *gocui.Gui, v *gocui.View) error {
+			g.DeleteView("confirm_popup")
+			g.DeleteKeybindings("confirm_popup")
+			if onCancel != nil {
+				onCancel()
+			}
+			g.SetCurrentView("listView")
+			g.Cursor = false
+			return nil
+		}
+
+		g.SetKeybinding("confirm_popup", 'y', gocui.ModNone, confirmAction)
+		g.SetKeybinding("confirm_popup", 'Y', gocui.ModNone, confirmAction)
+		g.SetKeybinding("confirm_popup", 'n', gocui.ModNone, cancelAction)
+		g.SetKeybinding("confirm_popup", 'N', gocui.ModNone, cancelAction)
+
+		return nil
+	})
+}
