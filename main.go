@@ -482,6 +482,39 @@ func main() {
 			v.Write([]byte(strings.Repeat(" ", padding) + title))
 		}
 
+		// Breadcrumb view
+		if v, err := g.SetView("breadcrumb", 0, 2, maxX-1, 4, 0); err != nil {
+			if err != gocui.ErrUnknownView {
+				return err
+			}
+			v.Frame = false
+			v.Clear()
+		}
+		// Update breadcrumb content dynamically
+		if v, err := g.View("breadcrumb"); err == nil {
+			v.Clear()
+			breadcrumb := " "
+
+			// Build breadcrumb based on current view
+			if m.SelectedConnection != "" {
+				breadcrumb += m.SelectedConnection
+			}
+
+			if m.SelectedListView == "dbs" || m.SelectedListView == "collections" || m.SelectedListView == "documents" {
+				if m.SelectedDB != "" {
+					breadcrumb += " > " + m.SelectedDB
+				}
+			}
+
+			if m.SelectedListView == "collections" || m.SelectedListView == "documents" {
+				if m.SelectedCollection != "" {
+					breadcrumb += " > " + m.SelectedCollection
+				}
+			}
+
+			v.Write([]byte(breadcrumb))
+		}
+
 		if v, err := g.SetView("footer", 0, maxY-3, maxX-1, maxY-1, 0); err != nil {
 			if err != gocui.ErrUnknownView {
 				return err
