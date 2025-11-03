@@ -209,9 +209,10 @@ func main() {
 		currentEditLine = lineNum
 
 		editPopup = &popup.Popup{
-			Name:    "editPopup",
-			Title:   "Edit Line (Ctrl+S to save, ESC to cancel)",
-			Content: oldLine,
+			Name:         "editPopup",
+			Title:        "Edit Line (Ctrl+S to save, ESC to cancel)",
+			Content:      oldLine,
+			DisableEnter: true,
 			OnSave: func(newContent string) {
 				// Update the line in notepad
 				note.Lines[currentEditLine] = newContent
