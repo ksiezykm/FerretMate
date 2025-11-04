@@ -1,6 +1,8 @@
 package main
 
 import (
+	"encoding/json"
+	"fmt"
 	"log"
 	"strings"
 
@@ -12,6 +14,95 @@ import (
 
 	"github.com/awesome-gocui/gocui"
 )
+
+// buildBreadcrumbTitle builds a title with breadcrumb navigation
+// Prioritizes the most relevant context based on current view
+func buildBreadcrumbTitle(m *model.Model, baseTitle string, maxWidth int) string {
+	parts := []string{}
+
+	// Build breadcrumb parts based on context
+	if m.SelectedConnection != "" {
+		parts = append(parts, m.SelectedConnection)
+	}
+
+	if m.SelectedDB != "" && (m.SelectedListView == "dbs" || m.SelectedListView == "collections" || m.SelectedListView == "documents") {
+		parts = append(parts, m.SelectedDB)
+	}
+
+	if m.SelectedCollection != "" && (m.SelectedListView == "collections" || m.SelectedListView == "documents") {
+		parts = append(parts, m.SelectedCollection)
+	}
+
+	if len(parts) == 0 {
+		return baseTitle
+	}
+
+	// Calculate available width for breadcrumb (account for " " separator and baseTitle)
+	// Format: "baseTitle: part1 > part2 > part3"
+	separator := " > "
+	prefix := baseTitle + ": "
+	availableWidth := maxWidth - len(prefix) - 4 // 4 for frame characters
+
+	if availableWidth < 20 {
+		return baseTitle // Not enough space
+	}
+
+	// Truncate parts with priority for the last (most specific) element
+	var truncatedParts []string
+	if len(parts) == 1 {
+		// Only one part - give it most of the space
+		if len(parts[0]) > availableWidth {
+			truncatedParts = append(truncatedParts, parts[0][:availableWidth-3]+"...")
+		} else {
+			truncatedParts = append(truncatedParts, parts[0])
+		}
+	} else if len(parts) == 2 {
+		// Two parts - balance them
+		maxPerPart := (availableWidth - len(separator)) / 2
+		for _, part := range parts {
+			if len(part) > maxPerPart {
+				truncatedParts = append(truncatedParts, part[:maxPerPart-3]+"...")
+			} else {
+				truncatedParts = append(truncatedParts, part)
+			}
+		}
+	} else if len(parts) == 3 {
+		// Three parts - prioritize last (collection), then middle (db), then first (connection)
+		collectionMax := availableWidth / 2 // 50% for collection
+		dbMax := availableWidth / 3         // 33% for db
+		connectionMax := 15                 // Fixed 15 chars for connection
+
+		// Start from the end (most important)
+		collection := parts[2]
+		if len(collection) > collectionMax {
+			collection = collection[:collectionMax-3] + "..."
+		}
+
+		database := parts[1]
+		if len(database) > dbMax {
+			database = database[:dbMax-3] + "..."
+		}
+
+		connection := parts[0]
+		if len(connection) > connectionMax {
+			connection = connection[:connectionMax-3] + "..."
+		}
+
+		truncatedParts = []string{connection, database, collection}
+	}
+
+	breadcrumb := strings.Join(truncatedParts, separator)
+
+	// Final check - if still too long, truncate from the beginning
+	if len(prefix+breadcrumb) > availableWidth {
+		maxBreadcrumb := availableWidth - len(prefix)
+		if maxBreadcrumb > 3 {
+			breadcrumb = "..." + breadcrumb[len(breadcrumb)-maxBreadcrumb+3:]
+		}
+	}
+
+	return prefix + breadcrumb
+}
 
 func main() {
 	g, err := gocui.NewGui(gocui.OutputNormal, true)
@@ -220,6 +311,22 @@ func main() {
 				// Rebuild the full content
 				newFullContent := strings.Join(note.Lines, "\n")
 
+				// Validate JSON before saving
+				var jsonTest interface{}
+				if err := json.Unmarshal([]byte(newFullContent), &jsonTest); err != nil {
+					// Invalid JSON - restore old line and show error
+					note.Lines[currentEditLine] = oldLine
+					log.Printf("Invalid JSON: %v", err)
+
+					// Close edit popup first
+					g.DeleteView(editPopup.Name)
+					g.DeleteKeybindings(editPopup.Name)
+
+					// Show error message
+					popup.ShowInfoWithFocus(g, fmt.Sprintf("Invalid JSON: %v", err), note.Name)
+					return
+				}
+
 				// Update the document in model
 				if m.SelectedDocument != "" {
 					m.DocumentContent[m.SelectedDocument] = newFullContent
@@ -227,21 +334,25 @@ func main() {
 					// Save to database
 					if err := db.UpdateDocument(db.Client, m.SelectedDB, m.SelectedCollection, newFullContent); err != nil {
 						log.Printf("Failed to save document: %v", err)
-						popup.ShowInfo(g, "Failed to save document")
+
+						// Close edit popup first
+						g.DeleteView(editPopup.Name)
+						g.DeleteKeybindings(editPopup.Name)
+
+						// Show error message
+						popup.ShowInfoWithFocus(g, fmt.Sprintf("Failed to save: %v", err), note.Name)
+						return
 					} else {
 						// Re-fetch document from database
 						if docID, ok := m.DocumentObjects[m.SelectedDocument]; ok {
 							if freshDoc, err := db.GetDocument(db.Client, m.SelectedDB, m.SelectedCollection, docID); err == nil {
 								m.DocumentContent[m.SelectedDocument] = freshDoc
 								note.Update(g, freshDoc)
-								popup.ShowInfo(g, "Document saved successfully")
 							} else {
 								note.Update(g, newFullContent)
-								popup.ShowInfo(g, "Saved but failed to refresh")
 							}
 						} else {
 							note.Update(g, newFullContent)
-							popup.ShowInfo(g, "Saved successfully")
 						}
 					}
 				} else {
@@ -281,7 +392,8 @@ func main() {
 	// Set up notepad's back callback
 	note.OnBack = func() {
 		// Go back to document list
-		listView.Title = "Documents"
+		maxX, _ := g.Size()
+		listView.Title = buildBreadcrumbTitle(m, "Documents", maxX/2)
 		listView.Items = m.Documents
 		listView.Update(g)
 
@@ -324,7 +436,8 @@ func main() {
 					m.SelectedListView = "dbs"
 
 					g.Update(func(g *gocui.Gui) error {
-						listView.Title = "DBs"
+						maxX, _ := g.Size()
+						listView.Title = buildBreadcrumbTitle(m, "DBs", maxX/2)
 						listView.Items = m.DBs
 						listView.Selected = m.SelectedDBIndex
 						return listView.Update(g)
@@ -345,7 +458,8 @@ func main() {
 
 				m.SelectedListView = "collections"
 
-				listView.Title = "Collections"
+				maxX, _ := g.Size()
+				listView.Title = buildBreadcrumbTitle(m, "Collections", maxX/2)
 				listView.Items = m.Collections
 				listView.Selected = m.SelectedCollectionIndex
 
@@ -375,7 +489,8 @@ func main() {
 
 				m.SelectedListView = "documents"
 
-				listView.Title = "Documents"
+				maxX, _ := g.Size()
+				listView.Title = buildBreadcrumbTitle(m, "Documents", maxX/2)
 				listView.Items = m.Documents
 
 				listView.Update(g)
@@ -431,7 +546,8 @@ func main() {
 				m.SelectedListView = "collections"
 				m.SelectedDocument = ""
 
-				listView.Title = "Collections"
+				maxX, _ := g.Size()
+				listView.Title = buildBreadcrumbTitle(m, "Collections", maxX/2)
 				listView.Items = m.Collections
 				listView.Selected = m.SelectedCollectionIndex
 				listView.Update(g)
@@ -446,7 +562,8 @@ func main() {
 				m.SelectedListView = "dbs"
 				m.SelectedCollection = ""
 
-				listView.Title = "DBs"
+				maxX, _ := g.Size()
+				listView.Title = buildBreadcrumbTitle(m, "DBs", maxX/2)
 				listView.Items = m.DBs
 				listView.Selected = m.SelectedDBIndex
 				listView.Update(g)
@@ -455,7 +572,8 @@ func main() {
 				m.SelectedListView = "connections"
 				m.SelectedDB = ""
 
-				listView.Title = "Connections"
+				maxX, _ := g.Size()
+				listView.Title = buildBreadcrumbTitle(m, "Connections", maxX/2)
 				listView.Items = m.Connections
 				listView.Selected = m.SelectedConnectionIndex
 				listView.Update(g)
@@ -483,45 +601,17 @@ func main() {
 			v.Write([]byte(strings.Repeat(" ", padding) + title))
 		}
 
-		// Breadcrumb view
-		if v, err := g.SetView("breadcrumb", 0, 2, maxX-1, 4, 0); err != nil {
+		// Footer view with key information
+		if v, err := g.SetView("footer", 0, maxY-2, maxX-1, maxY, 0); err != nil {
 			if err != gocui.ErrUnknownView {
 				return err
 			}
-			v.Frame = false
-			v.Clear()
-		}
-		// Update breadcrumb content dynamically
-		if v, err := g.View("breadcrumb"); err == nil {
-			v.Clear()
-			breadcrumb := " "
-
-			// Build breadcrumb based on current view
-			if m.SelectedConnection != "" {
-				breadcrumb += m.SelectedConnection
-			}
-
-			if m.SelectedListView == "dbs" || m.SelectedListView == "collections" || m.SelectedListView == "documents" {
-				if m.SelectedDB != "" {
-					breadcrumb += " > " + m.SelectedDB
-				}
-			}
-
-			if m.SelectedListView == "collections" || m.SelectedListView == "documents" {
-				if m.SelectedCollection != "" {
-					breadcrumb += " > " + m.SelectedCollection
-				}
-			}
-
-			v.Write([]byte(breadcrumb))
-		}
-
-		if v, err := g.SetView("footer", 0, maxY-3, maxX-1, maxY-1, 0); err != nil {
-			if err != gocui.ErrUnknownView {
-				return err
-			}
-			v.Frame = false
+			v.Frame = true
 			v.Title = ""
+		}
+
+		// Update footer content dynamically
+		if v, err := g.View("footer"); err == nil {
 			v.Clear()
 			v.Write([]byte(" ↑↓: Navigate | Enter: Select | N: New | Del: Delete | ESC: Back | Ctrl+C: Quit"))
 		}
