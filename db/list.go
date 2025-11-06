@@ -4,6 +4,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"os"
+	"strings"
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
@@ -280,5 +282,146 @@ func DeleteDatabase(client *mongo.Client, dbName string) error {
 		return fmt.Errorf("failed to delete database: %w", err)
 	}
 
+	return nil
+}
+
+// ExportDocument exports a single document to a JSON file
+func ExportDocument(client *mongo.Client, dbName, collName string, docID interface{}, filePath string) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	coll := client.Database(dbName).Collection(collName)
+	var doc bson.M
+	err := coll.FindOne(ctx, bson.M{"_id": docID}).Decode(&doc)
+	if err != nil {
+		return fmt.Errorf("failed to find document: %w", err)
+	}
+
+	jsonBytes, err := json.MarshalIndent(doc, "", "  ")
+	if err != nil {
+		return fmt.Errorf("failed to marshal document: %w", err)
+	}
+
+	// Create directory if it doesn't exist
+	dir := filePath[:strings.LastIndex(filePath, "/")]
+	if dir != "" && dir != filePath {
+		if err := createDirIfNotExists(dir); err != nil {
+			return err
+		}
+	}
+
+	// Write to file
+	file, err := os.Create(filePath)
+	if err != nil {
+		return fmt.Errorf("failed to create file: %w", err)
+	}
+	defer file.Close()
+
+	_, err = file.Write(jsonBytes)
+	if err != nil {
+		return fmt.Errorf("failed to write to file: %w", err)
+	}
+
+	return nil
+}
+
+// ExportCollection exports all documents from a collection to a directory
+func ExportCollection(client *mongo.Client, dbName, collName, dirPath string) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+
+	// Create directory
+	if err := createDirIfNotExists(dirPath); err != nil {
+		return err
+	}
+
+	coll := client.Database(dbName).Collection(collName)
+	cursor, err := coll.Find(ctx, bson.M{})
+	if err != nil {
+		return fmt.Errorf("failed to find documents: %w", err)
+	}
+	defer cursor.Close(ctx)
+
+	count := 0
+	for cursor.Next(ctx) {
+		var doc bson.M
+		if err := cursor.Decode(&doc); err != nil {
+			continue
+		}
+
+		// Generate filename based on _id or index
+		var filename string
+		if id, ok := doc["_id"]; ok {
+			filename = fmt.Sprintf("%v.json", id)
+			// Clean filename from invalid characters
+			filename = strings.ReplaceAll(filename, "/", "_")
+			filename = strings.ReplaceAll(filename, "\\", "_")
+			filename = strings.ReplaceAll(filename, ":", "_")
+		} else {
+			filename = fmt.Sprintf("doc_%d.json", count)
+		}
+
+		jsonBytes, err := json.MarshalIndent(doc, "", "  ")
+		if err != nil {
+			continue
+		}
+
+		filePath := fmt.Sprintf("%s/%s", dirPath, filename)
+		file, err := os.Create(filePath)
+		if err != nil {
+			continue
+		}
+
+		file.Write(jsonBytes)
+		file.Close()
+		count++
+	}
+
+	if count == 0 {
+		return fmt.Errorf("no documents exported")
+	}
+
+	return nil
+}
+
+// ExportDatabase exports all collections from a database to a directory structure
+func ExportDatabase(client *mongo.Client, dbName, dirPath string) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+	defer cancel()
+
+	// Create base directory
+	if err := createDirIfNotExists(dirPath); err != nil {
+		return err
+	}
+
+	// Get all collections
+	collections, err := client.Database(dbName).ListCollectionNames(ctx, bson.M{})
+	if err != nil {
+		return fmt.Errorf("failed to list collections: %w", err)
+	}
+
+	if len(collections) == 0 {
+		return fmt.Errorf("no collections found in database")
+	}
+
+	// Export each collection
+	for _, collName := range collections {
+		collPath := fmt.Sprintf("%s/%s", dirPath, collName)
+		if err := ExportCollection(client, dbName, collName, collPath); err != nil {
+			// Log error but continue with other collections
+			fmt.Printf("Warning: failed to export collection %s: %v\n", collName, err)
+		}
+	}
+
+	return nil
+}
+
+// createDirIfNotExists creates a directory if it doesn't exist
+func createDirIfNotExists(dir string) error {
+	if _, err := os.Stat(dir); os.IsNotExist(err) {
+		if err := os.MkdirAll(dir, 0755); err != nil {
+			return fmt.Errorf("failed to create directory: %w", err)
+		}
+	}
 	return nil
 }

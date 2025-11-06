@@ -1,0 +1,49 @@
+{
+  "_id": "67d1eafcce383c0c3364dc4a",
+  "result": [
+    {
+      "creditCard": {
+        "cvv": "102",
+        "issuer": "jcb",
+        "number": "3529-7214-6352-0277"
+      },
+      "domain": "handy-bar.biz",
+      "emails": [
+        "Johnson78@example.com",
+        "Mylene_Fisher38@example.com"
+      ],
+      "job": {
+        "area": "Usability",
+        "company": "Kling, Mitchell and Walsh",
+        "descriptor": "Chief",
+        "title": "Direct Division Coordinator",
+        "type": "Liaison"
+      },
+      "location": {
+        "city": "Henderson",
+        "coordinates": {
+          "latitude": "-43.5224",
+          "longitude": "125.6039"
+        },
+        "country": "Botswana",
+        "state": "Hawaii",
+        "street": "6287 Bertha Divide",
+        "zip": "15351"
+      },
+      "message": "Hello, Providenci! Your order number is: #85",
+      "name": {
+        "first": "Titus",
+        "last": "Friesen",
+        "middle": "Nico"
+      },
+      "objectId": "67d1eaf4f80e9c05cf20aacb",
+      "password": "tFE4h6tnU0YVcba",
+      "phoneNumber": "252-781-0776 x278",
+      "phoneVariation": "+90 347 531 10 88",
+      "status": "disabled",
+      "username": "Titus-Friesen",
+      "uuid": "30ca9dda-02b3-4390-9a58-0309840c53c6",
+      "website": "https://impressionable-banking.org"
+    }
+  ]
+}

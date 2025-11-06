@@ -613,7 +613,7 @@ func main() {
 		// Update footer content dynamically
 		if v, err := g.View("footer"); err == nil {
 			v.Clear()
-			v.Write([]byte(" ↑↓: Navigate | Enter: Select | N: New | Del: Delete | ESC: Back | Ctrl+C: Quit"))
+			v.Write([]byte(" ↑↓: Navigate | Enter: Select | N: New | D: Export | Del: Delete | ESC: Back | Ctrl+C: Quit"))
 		}
 
 		if err := listView.Layout(g); err != nil {
@@ -952,6 +952,79 @@ func main() {
 					// Clear the notepad if the deleted document was being viewed
 					note.Update(g, "Pick something from the list...")
 				}
+			}, func() {
+				// Cancelled - do nothing
+			})
+		}
+
+		return nil
+	}); err != nil {
+		log.Panicln(err)
+	}
+
+	// Key binding for exporting/downloading items
+	if err := g.SetKeybinding("", 'd', gocui.ModNone, func(g *gocui.Gui, v *gocui.View) error {
+		switch m.SelectedListView {
+		case "dbs":
+			// Export entire database
+			if len(m.DBs) == 0 || listView.Selected >= len(m.DBs) {
+				return nil
+			}
+			dbName := m.DBs[listView.Selected]
+			exportPath := "./exports/" + dbName
+
+			popup.ShowConfirmation(g, "Export database '"+dbName+"' to '"+exportPath+"'?", func() {
+				if err := db.ExportDatabase(db.Client, dbName, exportPath); err != nil {
+					popup.ShowInfo(g, "Failed to export database: "+err.Error())
+					log.Printf("Failed to export database: %v", err)
+					return
+				}
+
+				popup.ShowInfo(g, "Database exported to: "+exportPath)
+			}, func() {
+				// Cancelled - do nothing
+			})
+
+		case "collections":
+			// Export entire collection
+			if len(m.Collections) == 0 || listView.Selected >= len(m.Collections) {
+				return nil
+			}
+			collName := m.Collections[listView.Selected]
+			dbName := m.DBs[m.SelectedDBIndex]
+			exportPath := "./exports/" + dbName + "/" + collName
+
+			popup.ShowConfirmation(g, "Export collection '"+collName+"' to '"+exportPath+"'?", func() {
+				if err := db.ExportCollection(db.Client, dbName, collName, exportPath); err != nil {
+					popup.ShowInfo(g, "Failed to export collection: "+err.Error())
+					log.Printf("Failed to export collection: %v", err)
+					return
+				}
+
+				popup.ShowInfo(g, "Collection exported to: "+exportPath)
+			}, func() {
+				// Cancelled - do nothing
+			})
+
+		case "documents":
+			// Export single document
+			if len(m.Documents) == 0 || listView.Selected >= len(m.Documents) {
+				return nil
+			}
+			docName := m.Documents[listView.Selected]
+			docID := m.DocumentObjects[docName]
+			dbName := m.DBs[m.SelectedDBIndex]
+			collName := m.Collections[m.SelectedCollectionIndex]
+			exportPath := "./exports/" + dbName + "/" + collName + "/" + docName + ".json"
+
+			popup.ShowConfirmation(g, "Export document '"+docName+"' to '"+exportPath+"'?", func() {
+				if err := db.ExportDocument(db.Client, dbName, collName, docID, exportPath); err != nil {
+					popup.ShowInfo(g, "Failed to export document: "+err.Error())
+					log.Printf("Failed to export document: %v", err)
+					return
+				}
+
+				popup.ShowInfo(g, "Document exported to: "+exportPath)
 			}, func() {
 				// Cancelled - do nothing
 			})
