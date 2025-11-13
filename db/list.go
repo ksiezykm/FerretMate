@@ -67,19 +67,10 @@ func ListDocuments(client *mongo.Client, dbName, collName string) ([]Document, e
 		docID := doc["_id"]
 		summary := ""
 
-		// Try to create a meaningful summary
-		if name, ok := doc["name"].(string); ok && name != "" {
-			summary = name
-		} else if username, ok := doc["username"].(string); ok && username != "" {
-			summary = username
-		} else if title, ok := doc["title"].(string); ok && title != "" {
-			summary = title
-		} else if email, ok := doc["email"].(string); ok && email != "" {
-			summary = email
-		} else if idStr, ok := docID.(string); ok {
+		// Display _id as summary
+		if idStr, ok := docID.(string); ok {
 			summary = idStr
 		} else {
-			// Fallback: show _id type and first few fields
 			summary = fmt.Sprintf("%v", docID)
 			if len(summary) > 50 {
 				summary = summary[:50] + "..."
@@ -424,4 +415,83 @@ func createDirIfNotExists(dir string) error {
 		}
 	}
 	return nil
+}
+
+// UploadDocument uploads document(s) from a JSON file to MongoDB
+// Supports both single document (object) and multiple documents (array)
+// If a document doesn't have an _id, MongoDB will automatically generate one
+func UploadDocument(client *mongo.Client, dbName, collName, filePath string) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+
+	// Read the JSON file
+	jsonBytes, err := os.ReadFile(filePath)
+	if err != nil {
+		return fmt.Errorf("failed to read file: %w", err)
+	}
+
+	coll := client.Database(dbName).Collection(collName)
+
+	// Try to parse as array first
+	var docArray []bson.M
+	if err := json.Unmarshal(jsonBytes, &docArray); err == nil {
+		// It's an array of documents
+		if len(docArray) == 0 {
+			return fmt.Errorf("empty document array")
+		}
+
+		// Process each document
+		var docs []interface{}
+		for _, doc := range docArray {
+			processDocumentID(&doc)
+			docs = append(docs, doc)
+		}
+
+		// Insert all documents
+		_, err := coll.InsertMany(ctx, docs)
+		if err != nil {
+			return fmt.Errorf("failed to insert documents: %w", err)
+		}
+
+		return nil
+	}
+
+	// Not an array, try to parse as single document
+	var doc bson.M
+	if err := json.Unmarshal(jsonBytes, &doc); err != nil {
+		return fmt.Errorf("failed to parse JSON (not a valid object or array): %w", err)
+	}
+
+	// Process the document's _id
+	processDocumentID(&doc)
+
+	// Insert the single document
+	_, err = coll.InsertOne(ctx, doc)
+	if err != nil {
+		return fmt.Errorf("failed to insert document: %w", err)
+	}
+
+	return nil
+}
+
+// processDocumentID converts _id field to proper ObjectID format if needed
+func processDocumentID(doc *bson.M) {
+	if rawID, ok := (*doc)["_id"]; ok {
+		if idMap, ok := rawID.(map[string]interface{}); ok {
+			if oidStr, ok := idMap["$oid"].(string); ok {
+				// Convert {"$oid": "..."} format to ObjectID
+				oid, err := primitive.ObjectIDFromHex(oidStr)
+				if err == nil {
+					(*doc)["_id"] = oid
+				}
+			}
+		} else if idStr, ok := rawID.(string); ok {
+			// Try to convert plain string to ObjectID
+			oid, err := primitive.ObjectIDFromHex(idStr)
+			if err == nil {
+				(*doc)["_id"] = oid
+			}
+		}
+	}
+	// If no _id is present, MongoDB will automatically generate one during insert
 }

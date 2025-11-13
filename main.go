@@ -613,7 +613,7 @@ func main() {
 		// Update footer content dynamically
 		if v, err := g.View("footer"); err == nil {
 			v.Clear()
-			v.Write([]byte(" ↑↓: Navigate | Enter: Select | N: New | D: Export | Del: Delete | ESC: Back | Ctrl+C: Quit"))
+			v.Write([]byte(" ↑↓: Navigate | Enter: Select | N: New | D: Export | U: Upload | Del: Delete | ESC: Back | Ctrl+C: Quit"))
 		}
 
 		if err := listView.Layout(g); err != nil {
@@ -1029,6 +1029,76 @@ func main() {
 				// Cancelled - do nothing
 			})
 		}
+
+		return nil
+	}); err != nil {
+		log.Panicln(err)
+	}
+
+	// Key binding for uploading document from file
+	if err := g.SetKeybinding("", 'u', gocui.ModNone, func(g *gocui.Gui, v *gocui.View) error {
+		// Only allow upload when viewing documents list
+		if m.SelectedListView != "documents" {
+			return nil
+		}
+
+		// Show popup for file path
+		uploadPopup := &popup.Popup{
+			Name:       "uploadPopup",
+			Title:      "Upload Document(s) from JSON File - object or array (Enter or Ctrl+S to upload, ESC to cancel)",
+			Content:    "",
+			SingleLine: true,
+			OnSave: func(filePath string) {
+				if filePath == "" {
+					return
+				}
+
+				if db.Client == nil {
+					popup.ShowInfo(g, "Not connected to any server")
+					return
+				}
+
+				dbName := m.DBs[m.SelectedDBIndex]
+				collName := m.Collections[m.SelectedCollectionIndex]
+
+				// Upload the document
+				if err := db.UploadDocument(db.Client, dbName, collName, filePath); err != nil {
+					popup.ShowInfo(g, "Failed to upload document: "+err.Error())
+					log.Printf("Failed to upload document: %v", err)
+					return
+				}
+
+				popup.ShowInfo(g, "Document uploaded successfully")
+
+				// Refresh document list
+				docs, err := db.ListDocuments(db.Client, dbName, collName)
+				if err == nil {
+					m.Documents = []string{}
+					m.DocumentObjects = make(map[string]interface{})
+					m.DocumentContent = make(map[string]string)
+					for _, doc := range docs {
+						name := doc.Summary
+						m.DocumentObjects[name] = doc.ID
+						m.DocumentContent[name] = doc.JSON
+						m.Documents = append(m.Documents, name)
+					}
+					listView.Items = m.Documents
+					listView.Selected = len(m.Documents) - 1 // Select the newly uploaded document
+					listView.Update(g)
+
+					// Set focus back to list view
+					g.SetCurrentView(listView.Name)
+					g.Cursor = false
+				}
+			},
+			OnCancel: func() {
+				// Set focus back to list view on cancel
+				g.SetCurrentView(listView.Name)
+				g.Cursor = false
+			},
+		}
+		uploadPopup.Show(g)
+		uploadPopup.BindKeys(g)
 
 		return nil
 	}); err != nil {
