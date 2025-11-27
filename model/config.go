@@ -17,6 +17,10 @@ type Connection struct {
 func LoadConnections() ([]Connection, error) {
 	data, err := os.ReadFile("config.json")
 	if err != nil {
+		if os.IsNotExist(err) {
+			// Return empty list if config doesn't exist
+			return []Connection{}, nil
+		}
 		return nil, err
 	}
 

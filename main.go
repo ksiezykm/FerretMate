@@ -110,6 +110,7 @@ func main() {
 		log.Panicln(err)
 	}
 	defer g.Close()
+	defer db.Disconnect() // Close MongoDB connection on exit
 
 	g.Cursor = false
 
@@ -129,158 +130,17 @@ func main() {
 		Connections:        connNames,
 		SelectedConnection: "",
 
-		DBs:        []string{"MongoDB", "FerretDB", "Postgres", "MySQL", "SQLite1"},
+		DBs:        []string{},
 		SelectedDB: "",
 
-		Collections:        []string{"users", "orders", "products"},
+		Collections:        []string{},
 		SelectedCollection: "",
 
-		Documents:        []string{"user_001", "user_002", "order_12345", "product_abc"},
+		Documents:        []string{},
 		DocumentObjects:  make(map[string]interface{}),
 		SelectedDocument: "",
 
-		// Mockup MongoDB documents as JSON
-		DocumentContent: map[string]string{
-			"user_001": `{
-  "_id": "507f1f77bcf86cd799439011",
-  "username": "john_doe",
-  "email": "john.doe@example.com",
-  "firstName": "John",
-  "lastName": "Doe",
-  "age": 28,
-  "address": {
-    "street": "123 Main St",
-    "city": "New York",
-    "state": "NY",
-    "zipCode": "10001",
-    "country": "USA"
-  },
-  "phoneNumbers": [
-    {
-      "type": "home",
-      "number": "+1-555-123-4567"
-    },
-    {
-      "type": "mobile",
-      "number": "+1-555-987-6543"
-    }
-  ],
-  "isActive": true,
-  "roles": ["user", "customer"],
-  "createdAt": "2024-01-15T10:30:00Z",
-  "lastLogin": "2025-10-12T08:45:22Z"
-}`,
-			"user_002": `{
-  "_id": "507f1f77bcf86cd799439012",
-  "username": "jane_smith",
-  "email": "jane.smith@example.com",
-  "firstName": "Jane",
-  "lastName": "Smith",
-  "age": 34,
-  "address": {
-    "street": "456 Oak Ave",
-    "city": "Los Angeles",
-    "state": "CA",
-    "zipCode": "90001",
-    "country": "USA"
-  },
-  "phoneNumbers": [
-    {
-      "type": "mobile",
-      "number": "+1-555-444-8899"
-    }
-  ],
-  "isActive": true,
-  "roles": ["user", "admin", "moderator"],
-  "preferences": {
-    "notifications": true,
-    "theme": "dark",
-    "language": "en"
-  },
-  "createdAt": "2023-06-22T14:20:00Z",
-  "lastLogin": "2025-10-11T16:30:15Z"
-}`,
-			"order_12345": `{
-  "_id": "65f1a2b3c4d5e6f7g8h9i0j1",
-  "orderId": "ORD-2025-12345",
-  "customerId": "507f1f77bcf86cd799439011",
-  "orderDate": "2025-10-10T14:30:00Z",
-  "status": "shipped",
-  "items": [
-    {
-      "productId": "prod_abc123",
-      "name": "Wireless Mouse",
-      "quantity": 2,
-      "price": 29.99,
-      "total": 59.98
-    },
-    {
-      "productId": "prod_def456",
-      "name": "USB-C Cable",
-      "quantity": 3,
-      "price": 12.50,
-      "total": 37.50
-    }
-  ],
-  "subtotal": 97.48,
-  "tax": 8.78,
-  "shipping": 5.99,
-  "total": 112.25,
-  "shippingAddress": {
-    "street": "123 Main St",
-    "city": "New York",
-    "state": "NY",
-    "zipCode": "10001",
-    "country": "USA"
-  },
-  "paymentMethod": "credit_card",
-  "trackingNumber": "1Z999AA10123456784"
-}`,
-			"product_abc": `{
-  "_id": "prod_abc123def456",
-  "sku": "WMOUSE-BLK-001",
-  "name": "Wireless Ergonomic Mouse",
-  "category": "Electronics",
-  "subcategory": "Computer Accessories",
-  "description": "High-precision wireless mouse with ergonomic design",
-  "price": 29.99,
-  "currency": "USD",
-  "inStock": true,
-  "quantity": 150,
-  "specifications": {
-    "color": "Black",
-    "connectivity": "Bluetooth 5.0",
-    "batteryLife": "18 months",
-    "dpi": [800, 1200, 1600, 2400],
-    "weight": "95g",
-    "dimensions": {
-      "length": 120,
-      "width": 65,
-      "height": 40,
-      "unit": "mm"
-    }
-  },
-  "tags": ["wireless", "ergonomic", "bluetooth", "gaming"],
-  "ratings": {
-    "average": 4.5,
-    "count": 328,
-    "distribution": {
-      "5": 210,
-      "4": 85,
-      "3": 20,
-      "2": 8,
-      "1": 5
-    }
-  },
-  "vendor": {
-    "id": "vendor_xyz789",
-    "name": "TechGear Inc.",
-    "country": "Taiwan"
-  },
-  "createdAt": "2024-03-10T09:00:00Z",
-  "updatedAt": "2025-10-05T11:20:00Z"
-}`,
-		},
+		DocumentContent: make(map[string]string),
 	}
 
 	// Create notepad
@@ -788,6 +648,11 @@ func main() {
 						return
 					}
 
+					if m.SelectedDBIndex >= len(m.DBs) || m.SelectedCollectionIndex >= len(m.Collections) {
+						popup.ShowInfo(g, "No database or collection selected")
+						return
+					}
+
 					dbName := m.DBs[m.SelectedDBIndex]
 					collName := m.Collections[m.SelectedCollectionIndex]
 
@@ -876,6 +741,9 @@ func main() {
 			if len(m.Collections) == 0 || listView.Selected >= len(m.Collections) {
 				return nil
 			}
+			if m.SelectedDBIndex >= len(m.DBs) {
+				return nil
+			}
 			collName := m.Collections[listView.Selected]
 			dbName := m.DBs[m.SelectedDBIndex]
 
@@ -910,6 +778,9 @@ func main() {
 		case "documents":
 			// Delete document - use current cursor position
 			if len(m.Documents) == 0 || listView.Selected >= len(m.Documents) {
+				return nil
+			}
+			if m.SelectedDBIndex >= len(m.DBs) || m.SelectedCollectionIndex >= len(m.Collections) {
 				return nil
 			}
 			docName := m.Documents[listView.Selected]
@@ -990,6 +861,9 @@ func main() {
 			if len(m.Collections) == 0 || listView.Selected >= len(m.Collections) {
 				return nil
 			}
+			if m.SelectedDBIndex >= len(m.DBs) {
+				return nil
+			}
 			collName := m.Collections[listView.Selected]
 			dbName := m.DBs[m.SelectedDBIndex]
 			exportPath := "./exports/" + dbName + "/" + collName
@@ -1009,6 +883,9 @@ func main() {
 		case "documents":
 			// Export single document
 			if len(m.Documents) == 0 || listView.Selected >= len(m.Documents) {
+				return nil
+			}
+			if m.SelectedDBIndex >= len(m.DBs) || m.SelectedCollectionIndex >= len(m.Collections) {
 				return nil
 			}
 			docName := m.Documents[listView.Selected]
@@ -1055,6 +932,11 @@ func main() {
 
 				if db.Client == nil {
 					popup.ShowInfo(g, "Not connected to any server")
+					return
+				}
+
+				if m.SelectedDBIndex >= len(m.DBs) || m.SelectedCollectionIndex >= len(m.Collections) {
+					popup.ShowInfo(g, "No database or collection selected")
 					return
 				}
 

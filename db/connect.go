@@ -14,10 +14,16 @@ import (
 var Client *mongo.Client
 
 func Connect(c model.Connection) error {
-	uri := fmt.Sprintf("mongodb://%s:%s@%s:%d/?directConnection=true",
-		url.QueryEscape(c.Username),
-		url.QueryEscape(c.Password),
-		c.Host, c.Port)
+	var uri string
+	if c.Username != "" && c.Password != "" {
+		uri = fmt.Sprintf("mongodb://%s:%s@%s:%d/?directConnection=true",
+			url.QueryEscape(c.Username),
+			url.QueryEscape(c.Password),
+			c.Host, c.Port)
+	} else {
+		uri = fmt.Sprintf("mongodb://%s:%d/?directConnection=true",
+			c.Host, c.Port)
+	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
@@ -33,4 +39,14 @@ func Connect(c model.Connection) error {
 
 	Client = client
 	return nil
+}
+
+// Disconnect closes the MongoDB connection
+func Disconnect() error {
+	if Client == nil {
+		return nil
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	return Client.Disconnect(ctx)
 }
